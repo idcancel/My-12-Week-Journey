@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="My 12-Week Journey">
+<title>My 12-Week Journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blush: #f9d5ce;
+    --sage: #d6e3dd;
+    --navy: #07244e;
+    --cream: #fff7ed;
+    --blush-dark: #f0b8a9;
+    --sage-dark: #b8cfc8;
+    --navy-light: #1a3a6e;
+    --text: #2d2d2d;
+    --text-light: #6b6b6b;
+    --white: #ffffff;
+    --shadow: rgba(7, 36, 78, 0.08);
+    --shadow-md: rgba(7, 36, 78, 0.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* APP SHELL */
+  .app-header {
+    background: var(--navy);
+    color: var(--cream);
+    padding: 16px 20px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px var(--shadow-md);
+  }
+
+  .app-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+
+  .app-header h1 em {
+    font-style: italic;
+    color: var(--blush);
+  }
+
+  .week-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .week-nav button {
+    background: rgba(249,213,206,0.15);
+    border: 1px solid rgba(249,213,206,0.3);
+    color: var(--blush);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .week-nav button:hover { background: rgba(249,213,206,0.25); }
+  .week-nav button:disabled { opacity: 0.3; cursor: default; }
+
+  .week-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--cream);
+    text-align: center;
+    flex: 1;
+  }
+  .week-label span {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--sage);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  /* WEEK PROGRESS DOTS */
+  .week-dots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 0 0;
+  }
+  .week-dots .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: all 0.3s;
+  }
+  .week-dots .dot.active { background: var(--blush); width: 18px; border-radius: 3px; }
+  .week-dots .dot.done { background: var(--sage); }
+
+  /* MAIN CONTENT */
+  .week-content {
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 10px var(--shadow);
+    animation: slideUp 0.35s ease both;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .icon-blush { background: var(--blush); }
+  .icon-sage { background: var(--sage); }
+  .icon-navy { background: var(--navy); color: var(--cream); }
+
+  /* WEEK SETUP */
+  .week-setup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-group.full { grid-column: 1/-1; }
+
+  label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-light);
+  }
+
+  input[type="text"], input[type="date"], input[type="number"], textarea, select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 8px 10px;
+    border: 1.5px solid #e8e0d8;
+    border-radius: 8px;
+    background: var(--cream);
+    color: var(--text);
+    width: 100%;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--navy); }
+  textarea { resize: vertical; min-height: 52px; }
+
+  /* TARGETS DISPLAY */
+  .targets-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .target-pill {
+    background: var(--sage);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .target-pill .val { font-size: 16px; font-weight: 500; color: var(--navy); }
+  .target-pill .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-light); margin-top: 2px; }
+
+  /* MEASUREMENTS */
+  .measure-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .measure-box {
+    background: var(--blush);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .measure-box input {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--blush-dark);
+    border-radius: 0;
+    padding: 2px 4px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--navy);
+    width: 100%;
+  }
+  .measure-box input:focus { outline: none; border-color: var(--navy); }
+  .measure-box label { color: var(--navy); font-size: 10px; margin-top: 4px; display: block; }
+
+  /* DAYS */
+  .day-card {
+    background: var(--white);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px var(--shadow);
+    overflow: hidden;
+    animation: slideUp 0.35s ease both;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    gap: 10px;
+  }
+  .day-header:hover { background: rgba(214,227,221,0.2); }
+
+  .day-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--navy);
+    min-width: 100px;
+  }
+
+  .day-badge {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+  }
+  .badge-kb { background: var(--blush); color: var(--navy); }
+  .badge-off { background: #f0f0f0; color: #888; }
+  .badge-steady { background: var(--sage); color: var(--navy); }
+  .badge-interval { background: #e8eef8; color: var(--navy); }
+  .badge-long { background: var(--navy); color: var(--cream); }
+
+  .day-chevron {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-light);
+    transition: transform 0.3s;
+  }
+  .day-card.open .day-chevron { transform: rotate(180deg); }
+
+  .day-body {
+    display: none;
+    padding: 0 16px 16px;
+    border-top: 1px solid #f0ebe4;
+  }
+  .day-card.open .day-body { display: block; }
+
+  /* DAILY TRACKERS AT TOP */
+  .daily-trackers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 0 14px;
+    border-bottom: 1px dashed #e8e0d8;
+    margin-bottom: 14px;
+  }
+
+  .tracker-mini {
+    background: var(--cream);
+    border-radius: 10px;
+    padding: 9px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tracker-mini label { font-size: 10px; color: var(--text-light); }
+  .tracker-mini input[type="number"] {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid #ddd;
+    border-radius: 0;
+    padding: 2px 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--navy);
+  }
+  .tracker-mini .unit { font-size: 10px; color: var(--text-light); }
+
+  /* STEP BAR */
+  .step-bar-wrap { grid-column: 1/-1; }
+  .step-bar-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .step-bar { flex: 1; height: 6px; background: #e8e0d8; border-radius: 3px; overflow: hidden; }
+  .step-bar-fill { height: 100%; background: var(--navy); border-radius: 3px; transition: width 0.4s ease; }
+  .step-pct { font-size: 11px; color: var(--text-light); min-width: 32px; text-align: right; }
+
+  /* AFFIRMATION */
+  .affirmation-block {
+    background: var(--cream);
+    border-radius: 10px;
+    padding: 10px;
+    grid-column: 1/-1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .affirmation-check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .affirmation-check-row label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-light); margin: 0; }
+  .checkmark-toggle {
+    width: 20px; height: 20px;
+    border-radius: 5px;
+    border: 2px solid #c8c0b8;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    background: white;
+  }
+  .checkmark-toggle.checked {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: white;
+  }
+  .affirmation-block textarea {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    background: white;
+    min-height: 48px;
+    border-color: #e0d8d0;
+  }
+
+  /* WORKOUT INFO */
+  .workout-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .info-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .info-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-light);
+    min-width: 70px;
+    padding-top: 9px;
+  }
+  .info-value { flex: 1; min-width: 150px; }
+
+  .circle-options { display: flex; gap: 6px; flex-wrap: wrap; }
+  .circle-opt {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1.5px solid #ddd;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .circle-opt.selected {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: var(--cream);
+  }
+
+  .calorie-toggle { display: flex; gap: 6px; }
+  .cal-opt {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #ddd;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+  }
+  .cal-opt.selected { border-color: var(--sage-dark); background: var(--sage); color: var(--navy); font-weight: 500; }
+
+  .vest-row { display: flex; gap: 6px; align-items: center; }
+  .vest-row input { width: 60px; }
+  .vest-row span { font-size: 12px; color: var(--text-light); }
+
+  /* WEEKLY REFLECTIONS */
+  .reflection-grid { display: flex; flex-direction: column; gap: 10px; }
+  .reflection-item label { font-size: 12px; color: var(--navy); font-weight: 500; margin-bottom: 4px; }
+
+  /* SECTION DIVIDER */
+  .section-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+
+  /* MAINTENANCE ROW */
+  .maintenance-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--blush);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 10px;
+  }
+  .maintenance-row label { font-size: 11px; color: var(--navy); min-width: fit-content; margin: 0; }
+  .maintenance-row input { background: white; flex: 1; }
+
+  /* SAVE INDICATOR */
+  .save-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--navy);
+    color: var(--cream);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    transition: transform 0.3s ease;
+    z-index: 200;
+    pointer-events: none;
+  }
+  .save-toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--sage-dark); border-radius: 2px; }
+
+  @media (min-width: 480px) {
+    .week-content { padding: 20px; }
+    .targets-row { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>My 12-Week <em>Journey</em></h1>
+  <div class="week-nav">
+    <button id="prevBtn" onclick="changeWeek(-1)">&#8592;</button>
+    <div class="week-label">
+      <div id="weekTitle">Week 1</div>
+      <span id="weekDates">Set your dates below</span>
+    </div>
+    <button id="nextBtn" onclick="changeWeek(1)">&#8594;</button>
+  </div>
+  <div class="week-dots" id="weekDots"></div>
+</div>
+
+<div class="week-content" id="weekContent"></div>
+
+<div class="save-toast" id="saveToast">✓ Saved</div>
+
+<script>
+const DAYS = [
+  {
+    key: 'mon', name: 'Monday',
+    badge: 'Kettlebell', badgeClass: 'badge-kb',
+    workout: 'Kettlebell 16',
+    cal: ['Deficit'],
+    vest: false,
+    hasVestOpt: false,
+    optionalWalk: false
+  },
+  {
+    key: 'tue', name: 'Tuesday',
+    badge: 'Rest', badgeClass: 'badge-off',
+    workout: 'Off',
+    cal: ['Deficit'],
+    vest: false,
+    isOff: true
+  },
+  {
+    key: 'wed', name: 'Wednesday',
+    badge: 'Steady', badgeClass: 'badge-steady',
+    workout: 'Steady',
+    circleOptions: ['Big Burn 30', 'Super Burn 40'],
+    cal: ['Deficit', 'Maintenance'],
+    vest: true
+  },
+  {
+    key: 'thu', name: 'Thursday',
+    badge: 'Interval', badgeClass: 'badge-interval',
+    workout: 'Interval',
+    circleOptions: ['2 Fast Miles 34:45'],
+    hasCustomOther: true,
+    cal: ['Deficit'],
+    vest: false,
+    vestNote: 'No vest'
+  },
+  {
+    key: 'fri', name: 'Friday',
+    badge: 'Kettlebell', badgeClass: 'badge-kb',
+    workout: 'Kettlebell 16',
+    cal: ['Deficit'],
+    optionalWalk: true,
+    vestOptWalk: true
+  },
+  {
+    key: 'sat', name: 'Saturday',
+    badge: 'Long Walk', badgeClass: 'badge-long',
+    workout: 'Long',
+    circleOptions: ['Radio Remixes', 'Party Songs', '4 Fast Miles'],
+    cal: ['Maintenance'],
+    vest: true,
+    treat: true
+  },
+  {
+    key: 'sun', name: 'Sunday',
+    badge: 'Steady', badgeClass: 'badge-steady',
+    workout: 'Steady',
+    circleOptions: ['Big Burn 30', 'Super Burn 40'],
+    cal: ['Deficit'],
+    vest: true
+  }
+];
+
+const STEP_GOAL = 6250;
+let currentWeek = 1;
+let data = {};
+
+function storageKey(week) { return `journey_w${week}`; }
+
+function loadWeek(w) {
+  try {
+    const raw = localStorage.getItem(storageKey(w));
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+
+function saveWeek(w, d) {
+  try {
+    localStorage.setItem(storageKey(w), JSON.stringify(d));
+    showToast();
+  } catch(e) {}
+}
+
+function showToast() {
+  const t = document.getElementById('saveToast');
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function get(key, fallback='') {
+  return data[key] !== undefined ? data[key] : fallback;
+}
+
+function set(key, val) {
+  data[key] = val;
+  saveWeek(currentWeek, data);
+}
+
+function renderDots() {
+  const wrap = document.getElementById('weekDots');
+  wrap.innerHTML = '';
+  for (let i = 1; i <= 12; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === currentWeek ? ' active' : '');
+    // Check if week has data
+    const wd = loadWeek(i);
+    if (i < currentWeek && Object.keys(wd).length > 0) d.classList.add('done');
+    wrap.appendChild(d);
+  }
+}
+
+function updateHeader() {
+  document.getElementById('weekTitle').textContent = `Week ${currentWeek} of 12`;
+  const start = get('dateStart');
+  const end = get('dateEnd');
+  if (start && end) {
+    document.getElementById('weekDates').textContent = `${start} – ${end}`;
+  } else {
+    document.getElementById('weekDates').textContent = 'Set your dates below';
+  }
+  document.getElementById('prevBtn').disabled = currentWeek === 1;
+  document.getElementById('nextBtn').disabled = currentWeek === 12;
+}
+
+function changeWeek(dir) {
+  const next = currentWeek + dir;
+  if (next < 1 || next > 12) return;
+  currentWeek = next;
+  data = loadWeek(currentWeek);
+  renderPage();
+}
+
+function inp(key, type='text', placeholder='', cls='') {
+  const val = get(key);
+  return `<input type="${type}" class="${cls}" placeholder="${placeholder}" value="${escHtml(val)}" 
+    onchange="set('${key}', this.value)" oninput="if(this.type==='number'){set('${key}',this.value)}">`;
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function textarea(key, placeholder='', rows=2) {
+  const val = get(key);
+  return `<textarea rows="${rows}" placeholder="${placeholder}" onchange="set('${key}', this.value)">${escHtml(val)}</textarea>`;
+}
+
+function circleOpts(key, opts, hasOther=false) {
+  const selected = get(key);
+  let html = `<div class="circle-options">`;
+  opts.forEach(o => {
+    const sel = selected === o ? ' selected' : '';
+    html += `<div class="circle-opt${sel}" onclick="selectCircle('${key}', '${o}', this)">${o}</div>`;
+  });
+  if (hasOther) {
+    html += `<input type="text" placeholder="Other…" style="width:110px" value="${escHtml(get(key+'_other'))}" onchange="set('${key}_other', this.value)">`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function calToggle(key, opts) {
+  const selected = get(key) || opts[0];
+  let html = `<div class="calorie-toggle">`;
+  opts.forEach(o => {
+    const sel = selected === o ? ' selected' : '';
+    html += `<div class="cal-opt${sel}" onclick="selectCal('${key}', '${o}', this)">${o}</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function vestRow(lbKey, minKey) {
+  return `<div class="vest-row">
+    <input type="number" placeholder="lbs" value="${escHtml(get(lbKey))}" onchange="set('${lbKey}', this.value)" style="width:60px">
+    <span>lb for</span>
+    <input type="number" placeholder="min" value="${escHtml(get(minKey))}" onchange="set('${minKey}', this.value)" style="width:60px">
+    <span>min</span>
+  </div>`;
+}
+
+function stepBar(dayKey) {
+  const steps = parseInt(get(dayKey+'_steps')) || 0;
+  const pct = Math.min(100, Math.round((steps / STEP_GOAL) * 100));
+  return `<div class="step-bar-row">
+    <div class="step-bar"><div class="step-bar-fill" id="bar_${dayKey}" style="width:${pct}%"></div></div>
+    <div class="step-pct" id="pct_${dayKey}">${pct}%</div>
+  </div>`;
+}
+
+function dailyTrackers(dayKey) {
+  const checked = get(dayKey+'_aff_done') === 'true';
+  return `<div class="daily-trackers">
+    <div class="tracker-mini">
+      <label>💤 Sleep (hrs)</label>
+      <input type="number" step="0.5" min="0" max="24" placeholder="—"
+        value="${escHtml(get(dayKey+'_sleep'))}"
+        onchange="set('${dayKey}_sleep', this.value)">
+    </div>
+    <div class="tracker-mini">
+      <label>💧 Water (oz)</label>
+      <input type="number" min="0" placeholder="—"
+        value="${escHtml(get(dayKey+'_water'))}"
+        onchange="set('${dayKey}_water', this.value)">
+    </div>
+    <div class="tracker-mini step-bar-wrap">
+      <label>👟 Steps (goal: ${STEP_GOAL.toLocaleString()})</label>
+      <input type="number" min="0" placeholder="—"
+        value="${escHtml(get(dayKey+'_steps'))}"
+        onchange="set('${dayKey}_steps', this.value); updateStepBar('${dayKey}')">
+      ${stepBar(dayKey)}
+    </div>
+    <div class="affirmation-block">
+      <div class="affirmation-check-row">
+        <div class="checkmark-toggle ${checked ? 'checked' : ''}" 
+          onclick="toggleAff('${dayKey}', this)">✓</div>
+        <label>🌅 Morning Affirmation / Meditation</label>
+      </div>
+      <textarea placeholder="Write your affirmation or reflection here…" 
+        onchange="set('${dayKey}_aff_text', this.value)">${escHtml(get(dayKey+'_aff_text'))}</textarea>
+    </div>
+  </div>`;
+}
+
+function renderDayCard(day) {
+  const dk = `d_${day.key}`;
+  const isOpen = get(dk+'_open') === 'true';
+
+  let bodyHtml = `<div class="day-body">`;
+  bodyHtml += dailyTrackers(day.key);
+
+  if (!day.isOff) {
+    bodyHtml += `<div class="workout-row">`;
+
+    // Workout selection
+    if (day.circleOptions) {
+      bodyHtml += `<div class="info-row">
+        <span class="info-label">Workout</span>
+        <div class="info-value">${circleOpts(dk+'_workout', day.circleOptions, day.hasCustomOther)}</div>
+      </div>`;
+    }
+
+    // Optional walk (Friday)
+    if (day.optionalWalk) {
+      bodyHtml += `<div class="info-row">
+        <span class="info-label">Walk</span>
+        <div class="info-value" style="display:flex;align-items:center;gap:6px">
+          ${inp(dk+'_walk_min','number','min')}
+          <span style="font-size:12px;color:var(--text-light)">min, easy pace</span>
+        </div>
+      </div>`;
+    }
+
+    // Calories
+    if (day.cal && day.cal.length > 1) {
+      bodyHtml += `<div class="info-row">
+        <span class="info-label">Calories</span>
+        <div class="info-value">${calToggle(dk+'_cal', day.cal)}</div>
+      </div>`;
+    } else if (day.cal) {
+      bodyHtml += `<div class="info-row">
+        <span class="info-label">Calories</span>
+        <div class="info-value" style="padding-top:8px;font-size:13px;color:var(--text-light)">${day.cal[0]}</div>
+      </div>`;
+    }
+
+    // Vest
+    if (day.vest) {
+      bodyHtml += `<div class="info-row">
+        <span class="info-label">Vest</span>
+        <div class="info-value">${vestRow(dk+'_vest_lb', dk+'_vest_min')}</div>
+      </div>`;
+    } else if (day.vestOptWalk) {
+      bodyHtml += `<div class="info-row">
+        <span class="info-label">Vest</span>
+        <div class="info-value" style="padding-top:8px;font-size:12px;color:var(--text-light)">Optional on easy walk only</div>
+      </div>`;
+    } else if (day.vestNote) {
+      bodyHtml += `<div class="info-row">
+        <span class="info-label">Vest</span>
+        <div class="info-value" style="padding-top:8px;font-size:12px;color:var(--text-light)">${day.vestNote}</div>
+      </div>`;
+    }
+
+    // Treat (Saturday)
+    if (day.treat) {
+      bodyHtml += `<div class="info-row">
+        <span class="info-label">Treat</span>
+        <div class="info-value">${inp(dk+'_treat','text','Optional treat plan…')}</div>
+      </div>`;
+    }
+
+    bodyHtml += `</div>`; // workout-row
+  }
+
+  // Notes
+  bodyHtml += `<div style="margin-top:10px">
+    <label>Notes</label>
+    ${textarea(dk+'_notes', 'Add notes…')}
+  </div>`;
+
+  bodyHtml += `</div>`; // day-body
+
+  return `<div class="day-card ${isOpen ? 'open' : ''}" id="daycard_${day.key}">
+    <div class="day-header" onclick="toggleDay('${day.key}')">
+      <span class="day-name">${day.name}</span>
+      <span class="day-badge ${day.badgeClass}">${day.badge}</span>
+      <span class="day-chevron">▼</span>
+    </div>
+    ${bodyHtml}
+  </div>`;
+}
+
+function renderPage() {
+  updateHeader();
+  renderDots();
+
+  const maintenanceDays = get('maintenance_days');
+
+  let html = '';
+
+  // WEEK SETUP CARD
+  html += `<div class="card" style="animation-delay:0s">
+    <div class="card-title"><div class="icon icon-blush">📅</div>Week Setup</div>
+    <div class="week-setup-grid">
+      <div class="field-group">
+        <label>Start Date</label>
+        <input type="date" value="${escHtml(get('dateStart'))}" onchange="set('dateStart', this.value); updateHeader()">
+      </div>
+      <div class="field-group">
+        <label>End Date</label>
+        <input type="date" value="${escHtml(get('dateEnd'))}" onchange="set('dateEnd', this.value); updateHeader()">
+      </div>
+      <div class="field-group full">
+        <div class="maintenance-row">
+          <label>🌿 Maintenance days this week:</label>
+          <input type="text" placeholder="e.g. Saturday" value="${escHtml(maintenanceDays)}" onchange="set('maintenance_days', this.value)">
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // TARGETS CARD
+  html += `<div class="card" style="animation-delay:0.05s">
+    <div class="card-title"><div class="icon icon-sage">🎯</div>Weekly Targets</div>
+    <div class="targets-row">
+      <div class="target-pill"><div class="val">1,650</div><div class="lbl">Deficit Cals</div></div>
+      <div class="target-pill"><div class="val">130g</div><div class="lbl">Protein (deficit)</div></div>
+      <div class="target-pill"><div class="val">2,100</div><div class="lbl">Maintenance Cals</div></div>
+      <div class="target-pill"><div class="val">130g</div><div class="lbl">Protein (maint.)</div></div>
+    </div>
+  </div>`;
+
+  // MEASUREMENTS CARD
+  html += `<div class="card" style="animation-delay:0.1s">
+    <div class="card-title"><div class="icon icon-blush">📊</div>Measurements</div>
+    <div class="measure-grid">
+      <div class="measure-box">
+        <input type="text" placeholder="—" value="${escHtml(get('wed_weight'))}" onchange="set('wed_weight', this.value)">
+        <label>Wed Weight</label>
+      </div>
+      <div class="measure-box">
+        <input type="text" placeholder="—" value="${escHtml(get('wed_waist'))}" onchange="set('wed_waist', this.value)">
+        <label>Wed Waist</label>
+      </div>
+      <div class="measure-box">
+        <input type="text" placeholder="—" value="${escHtml(get('sat_weight'))}" onchange="set('sat_weight', this.value)">
+        <label>Sat Weight</label>
+      </div>
+    </div>
+  </div>`;
+
+  // DAYS
+  html += `<div style="animation-delay:0.15s">
+    <div class="card-title" style="padding:0 4px 6px;margin-bottom:0"><div class="icon icon-navy">🗓</div>Daily Plan</div>`;
+  DAYS.forEach(day => { html += renderDayCard(day); });
+  html += `</div>`;
+
+  // WEEKLY REFLECTION CARD
+  html += `<div class="card" style="animation-delay:0.2s;margin-top:14px">
+    <div class="card-title"><div class="icon icon-sage">✨</div>Weekly Reflection</div>
+    <div class="reflection-grid">
+      <div class="field-group">
+        <label>🏆 Weekly Win</label>
+        ${textarea('weekly_win', 'What went well this week?')}
+      </div>
+      <div class="field-group">
+        <label>⚡ Weekly Friction Point</label>
+        ${textarea('weekly_friction', 'What was challenging?')}
+      </div>
+      <div class="field-group">
+        <label>🔧 Next Week Fix</label>
+        ${textarea('weekly_fix', 'What will you do differently?')}
+      </div>
+    </div>
+  </div>`;
+
+  // BOTTOM SPACER
+  html += `<div style="height:40px"></div>`;
+
+  const content = document.getElementById('weekContent');
+  content.innerHTML = html;
+  content.scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
+function toggleDay(key) {
+  const card = document.getElementById('daycard_' + key);
+  const isOpen = card.classList.toggle('open');
+  set('d_' + key + '_open', isOpen ? 'true' : 'false');
+}
+
+function selectCircle(key, val, el) {
+  set(key, val);
+  el.closest('.circle-options').querySelectorAll('.circle-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selectCal(key, val, el) {
+  set(key, val);
+  el.closest('.calorie-toggle').querySelectorAll('.cal-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function toggleAff(dayKey, el) {
+  el.classList.toggle('checked');
+  set(dayKey + '_aff_done', el.classList.contains('checked') ? 'true' : 'false');
+}
+
+function updateStepBar(dayKey) {
+  const steps = parseInt(get(dayKey + '_steps')) || 0;
+  const pct = Math.min(100, Math.round((steps / STEP_GOAL) * 100));
+  const bar = document.getElementById('bar_' + dayKey);
+  const pctEl = document.getElementById('pct_' + dayKey);
+  if (bar) bar.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+
+// INIT
+data = loadWeek(currentWeek);
+renderPage();
+</script>
+</body>
+</html>
