@@ -327,6 +327,85 @@
   .step-bar-fill { height: 100%; background: var(--navy); border-radius: 3px; transition: width 0.4s ease; }
   .step-pct { font-size: 11px; color: var(--text-light); min-width: 32px; text-align: right; }
 
+  /* WATER TRACKER */
+  .water-tracker { grid-column: 1/-1; background: var(--cream); border-radius: 10px; padding: 10px; }
+  .water-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .water-label-row label { font-size: 10px; color: var(--text-light); }
+  .water-increment-toggle { display: flex; gap: 4px; }
+  .inc-btn {
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1.5px solid #ddd;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    background: white;
+    color: var(--text-light);
+    transition: all 0.2s;
+  }
+  .inc-btn.active { border-color: var(--navy); background: var(--navy); color: var(--cream); }
+  .water-controls { display: flex; align-items: center; gap: 10px; }
+  .water-adj-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--sage-dark);
+    background: var(--sage);
+    color: var(--navy);
+    font-size: 22px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .water-adj-btn:active { transform: scale(0.92); background: var(--sage-dark); }
+  .water-display { flex: 1; text-align: center; }
+  .water-oz { font-size: 24px; font-weight: 500; color: var(--navy); line-height: 1; }
+  .water-unit { font-size: 10px; color: var(--text-light); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px; }
+  .water-bar-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .water-bar { flex: 1; height: 5px; background: #e8e0d8; border-radius: 3px; overflow: hidden; }
+  .water-bar-fill { height: 100%; background: #7bb8c9; border-radius: 3px; transition: width 0.4s ease; }
+  .water-goal-pct { font-size: 10px; color: var(--text-light); min-width: 28px; text-align: right; }
+
+  /* FASTING TRACKER */
+  .fasting-block {
+    background: var(--cream);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .fasting-block.is-fast-day { background: #e8eef8; border: 1.5px solid #c0cfe8; }
+  .fast-toggle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid #c8c0b8;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    background: white;
+  }
+  .fast-toggle.checked { background: var(--navy); border-color: var(--navy); color: white; }
+  .fasting-info { flex: 1; }
+  .fasting-info .fast-title {
+    font-size: 11px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-light);
+  }
+  .fasting-block.is-fast-day .fast-title { color: var(--navy-light); }
+  .fasting-info .fast-subtitle { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+  .fast-badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px;
+    background: var(--navy); color: var(--cream); font-weight: 500; letter-spacing: 0.04em;
+  }
+
+  /* FASTING DAY CARD HIGHLIGHT */
+  .day-card.fast-day .day-header { background: #f0f4fc; }
+  .day-card.fast-day .day-name { color: var(--navy-light); }
+
   /* AFFIRMATION */
   .affirmation-block {
     background: var(--cream);
@@ -508,17 +587,16 @@ const DAYS = [
     badge: 'Kettlebell', badgeClass: 'badge-kb',
     workout: 'Kettlebell 16',
     cal: ['Deficit'],
-    vest: false,
-    hasVestOpt: false,
-    optionalWalk: false
+    vest: false, hasVestOpt: false, optionalWalk: false,
+    defaultFast: true
   },
   {
     key: 'tue', name: 'Tuesday',
     badge: 'Rest', badgeClass: 'badge-off',
     workout: 'Off',
     cal: ['Deficit'],
-    vest: false,
-    isOff: true
+    vest: false, isOff: true,
+    defaultFast: false
   },
   {
     key: 'wed', name: 'Wednesday',
@@ -526,7 +604,8 @@ const DAYS = [
     workout: 'Steady',
     circleOptions: ['Big Burn 30', 'Super Burn 40'],
     cal: ['Deficit', 'Maintenance'],
-    vest: true
+    vest: true,
+    defaultFast: true
   },
   {
     key: 'thu', name: 'Thursday',
@@ -535,16 +614,16 @@ const DAYS = [
     circleOptions: ['2 Fast Miles 34:45'],
     hasCustomOther: true,
     cal: ['Deficit'],
-    vest: false,
-    vestNote: 'No vest'
+    vest: false, vestNote: 'No vest',
+    defaultFast: false
   },
   {
     key: 'fri', name: 'Friday',
     badge: 'Kettlebell', badgeClass: 'badge-kb',
     workout: 'Kettlebell 16',
     cal: ['Deficit'],
-    optionalWalk: true,
-    vestOptWalk: true
+    optionalWalk: true, vestOptWalk: true,
+    defaultFast: true
   },
   {
     key: 'sat', name: 'Saturday',
@@ -552,8 +631,8 @@ const DAYS = [
     workout: 'Long',
     circleOptions: ['Radio Remixes', 'Party Songs', '4 Fast Miles'],
     cal: ['Maintenance'],
-    vest: true,
-    treat: true
+    vest: true, treat: true,
+    defaultFast: false
   },
   {
     key: 'sun', name: 'Sunday',
@@ -561,7 +640,8 @@ const DAYS = [
     workout: 'Steady',
     circleOptions: ['Big Burn 30', 'Super Burn 40'],
     cal: ['Deficit'],
-    vest: true
+    vest: true,
+    defaultFast: false
   }
 ];
 
@@ -694,20 +774,66 @@ function stepBar(dayKey) {
   </div>`;
 }
 
-function dailyTrackers(dayKey) {
-  const checked = get(dayKey+'_aff_done') === 'true';
+const WATER_GOAL = 64; // oz per day
+
+function waterTracker(dayKey) {
+  const oz = parseFloat(get(dayKey+'_water')) || 0;
+  const inc = get(dayKey+'_water_inc') || '8';
+  const pct = Math.min(100, Math.round((oz / WATER_GOAL) * 100));
+  return `<div class="water-tracker">
+    <div class="water-label-row">
+      <label>💧 Water (goal: ${WATER_GOAL} oz)</label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:10px;color:var(--text-light)">Add:</span>
+        <input type="number" min="0.1" step="0.1" 
+          style="width:64px;font-size:12px;padding:3px 6px;border-radius:8px;border:1.5px solid #ddd;background:white;text-align:center;color:var(--navy);"
+          value="${escHtml(inc)}"
+          onchange="set('${dayKey}_water_inc', this.value)"
+          oninput="set('${dayKey}_water_inc', this.value)">
+        <span style="font-size:10px;color:var(--text-light)">oz</span>
+      </div>
+    </div>
+    <div class="water-controls">
+      <button class="water-adj-btn" onclick="adjustWater('${dayKey}', -1)">−</button>
+      <div class="water-display">
+        <div class="water-oz" id="woz_${dayKey}">${oz % 1 === 0 ? oz : oz.toFixed(1)}</div>
+        <div class="water-unit">oz today</div>
+      </div>
+      <button class="water-adj-btn" onclick="adjustWater('${dayKey}', 1)">+</button>
+    </div>
+    <div class="water-bar-row">
+      <div class="water-bar"><div class="water-bar-fill" id="wbar_${dayKey}" style="width:${pct}%"></div></div>
+      <div class="water-goal-pct" id="wpct_${dayKey}">${pct}%</div>
+    </div>
+  </div>`;
+}
+
+function fastingBlock(dayKey, defaultFast) {
+  // First time: use defaultFast; after that, use stored value
+  const stored = get(dayKey+'_fast');
+  const isFastDay = stored !== '' ? stored === 'true' : defaultFast;
+  const isFastDayClass = defaultFast ? 'is-fast-day' : '';
+  const checkedClass = isFastDay ? 'checked' : '';
+  const subtitle = defaultFast ? 'Scheduled fasting day' : 'Non-fasting day';
+  const badge = defaultFast ? `<span class="fast-badge">M/W/F</span>` : '';
+  return `<div class="fasting-block ${isFastDayClass}">
+    <div class="fast-toggle ${checkedClass}" onclick="toggleFast('${dayKey}', this)">🌙</div>
+    <div class="fasting-info">
+      <div class="fast-title">⚡ Fasting Day</div>
+      <div class="fast-subtitle">${subtitle}</div>
+    </div>
+    ${badge}
+  </div>`;
+}
+
+function dailyTrackers(dayKey, defaultFast) {
+  const affChecked = get(dayKey+'_aff_done') === 'true';
   return `<div class="daily-trackers">
     <div class="tracker-mini">
       <label>💤 Sleep (hrs)</label>
       <input type="number" step="0.5" min="0" max="24" placeholder="—"
         value="${escHtml(get(dayKey+'_sleep'))}"
         onchange="set('${dayKey}_sleep', this.value)">
-    </div>
-    <div class="tracker-mini">
-      <label>💧 Water (oz)</label>
-      <input type="number" min="0" placeholder="—"
-        value="${escHtml(get(dayKey+'_water'))}"
-        onchange="set('${dayKey}_water', this.value)">
     </div>
     <div class="tracker-mini step-bar-wrap">
       <label>👟 Steps (goal: ${STEP_GOAL.toLocaleString()})</label>
@@ -716,9 +842,11 @@ function dailyTrackers(dayKey) {
         onchange="set('${dayKey}_steps', this.value); updateStepBar('${dayKey}')">
       ${stepBar(dayKey)}
     </div>
+    ${waterTracker(dayKey)}
+    ${fastingBlock(dayKey, defaultFast)}
     <div class="affirmation-block">
       <div class="affirmation-check-row">
-        <div class="checkmark-toggle ${checked ? 'checked' : ''}" 
+        <div class="checkmark-toggle ${affChecked ? 'checked' : ''}" 
           onclick="toggleAff('${dayKey}', this)">✓</div>
         <label>🌅 Morning Affirmation / Meditation</label>
       </div>
@@ -731,9 +859,10 @@ function dailyTrackers(dayKey) {
 function renderDayCard(day) {
   const dk = `d_${day.key}`;
   const isOpen = get(dk+'_open') === 'true';
+  const fastDayClass = day.defaultFast ? 'fast-day' : '';
 
   let bodyHtml = `<div class="day-body">`;
-  bodyHtml += dailyTrackers(day.key);
+  bodyHtml += dailyTrackers(day.key, day.defaultFast);
 
   if (!day.isOff) {
     bodyHtml += `<div class="workout-row">`;
@@ -807,7 +936,7 @@ function renderDayCard(day) {
 
   bodyHtml += `</div>`; // day-body
 
-  return `<div class="day-card ${isOpen ? 'open' : ''}" id="daycard_${day.key}">
+  return `<div class="day-card ${isOpen ? 'open' : ''} ${fastDayClass}" id="daycard_${day.key}">
     <div class="day-header" onclick="toggleDay('${day.key}')">
       <span class="day-name">${day.name}</span>
       <span class="day-badge ${day.badgeClass}">${day.badge}</span>
@@ -939,6 +1068,25 @@ function updateStepBar(dayKey) {
   const bar = document.getElementById('bar_' + dayKey);
   const pctEl = document.getElementById('pct_' + dayKey);
   if (bar) bar.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+
+function toggleFast(dayKey, el) {
+  el.classList.toggle('checked');
+  set(dayKey + '_fast', el.classList.contains('checked') ? 'true' : 'false');
+}
+
+function adjustWater(dayKey, dir) {
+  const inc = parseFloat(get(dayKey + '_water_inc') || '8');
+  const current = parseFloat(get(dayKey + '_water')) || 0;
+  const next = Math.max(0, Math.round((current + dir * inc) * 10) / 10);
+  set(dayKey + '_water', String(next));
+  const ozEl = document.getElementById('woz_' + dayKey);
+  const barEl = document.getElementById('wbar_' + dayKey);
+  const pctEl = document.getElementById('wpct_' + dayKey);
+  const pct = Math.min(100, Math.round((next / WATER_GOAL) * 100));
+  if (ozEl) ozEl.textContent = next % 1 === 0 ? next : next.toFixed(1);
+  if (barEl) barEl.style.width = pct + '%';
   if (pctEl) pctEl.textContent = pct + '%';
 }
 
