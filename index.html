@@ -559,6 +559,108 @@
     .week-content { padding: 20px; }
     .targets-row { grid-template-columns: repeat(4, 1fr); }
   }
+
+  /* SUPPLEMENTS */
+  .supp-block {
+    grid-column: 1/-1; background: var(--cream);
+    border-radius: 10px; padding: 10px;
+  }
+  .supp-header-row {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+  }
+  .supp-header-row label { font-size: 10px; color: var(--text-light); }
+  .supp-edit-btn {
+    font-size: 10px; padding: 3px 10px; border-radius: 20px;
+    border: 1.5px solid #ddd; background: white; color: var(--navy);
+    cursor: pointer; font-weight: 500; transition: all 0.2s;
+  }
+  .supp-edit-btn:hover { border-color: var(--navy); }
+  .supp-list { display: flex; flex-direction: column; gap: 6px; }
+  .supp-item {
+    display: flex; align-items: center; gap: 8px;
+    background: white; border-radius: 8px; padding: 7px 10px;
+  }
+  .supp-check {
+    width: 20px; height: 20px; border-radius: 5px;
+    border: 2px solid #c8c0b8; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; transition: all 0.2s; flex-shrink: 0; background: white;
+  }
+  .supp-check.checked { background: var(--navy); border-color: var(--navy); color: white; }
+  .supp-name { font-size: 13px; color: var(--navy); flex: 1; }
+  .supp-daily-tag {
+    font-size: 9px; padding: 2px 6px; border-radius: 10px;
+    background: var(--sage); color: var(--navy); font-weight: 500;
+  }
+  .supp-notes-field {
+    font-family: 'DM Sans', sans-serif; font-size: 12px;
+    padding: 6px 8px; border-radius: 7px; border: 1.5px solid #e8e0d8;
+    background: white; color: var(--text); width: 100%; margin-top: 6px; outline: none;
+  }
+  .supp-notes-field:focus { border-color: var(--navy); }
+  .supp-empty { font-size: 12px; color: var(--text-light); font-style: italic; padding: 4px 0; }
+
+  /* SUPPLEMENT MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(7,36,78,0.45); z-index: 300;
+    align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    background: white; border-radius: 20px 20px 0 0;
+    padding: 20px; width: 100%; max-width: 600px;
+    max-height: 80vh; overflow-y: auto;
+    animation: sheetUp 0.3s ease;
+  }
+  @keyframes sheetUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 4px;
+  }
+  .modal-subtitle { font-size: 12px; color: var(--text-light); margin-bottom: 16px; }
+  .modal-supp-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .modal-supp-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--cream); border-radius: 10px; padding: 8px 10px;
+  }
+  .modal-supp-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--navy); }
+  .modal-daily-toggle {
+    font-size: 10px; padding: 3px 8px; border-radius: 20px;
+    border: 1.5px solid #ddd; cursor: pointer; transition: all 0.2s;
+    background: white; color: var(--text-light); white-space: nowrap;
+  }
+  .modal-daily-toggle.daily {
+    border-color: var(--sage-dark); background: var(--sage);
+    color: var(--navy); font-weight: 500;
+  }
+  .modal-delete-btn {
+    width: 24px; height: 24px; border-radius: 50%; border: none;
+    background: #ffe0e0; color: #c0392b; cursor: pointer;
+    font-size: 14px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+  }
+  .modal-delete-btn:hover { background: #ffc0c0; }
+  .modal-add-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .modal-add-input {
+    flex: 1; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 9px 12px; border-radius: 10px; border: 1.5px solid #e8e0d8;
+    background: var(--cream); color: var(--text); outline: none;
+  }
+  .modal-add-input:focus { border-color: var(--navy); }
+  .modal-add-btn {
+    padding: 9px 16px; border-radius: 10px; border: none;
+    background: var(--navy); color: var(--cream); font-size: 13px;
+    font-weight: 500; cursor: pointer; white-space: nowrap;
+  }
+  .modal-close-btn {
+    width: 100%; padding: 12px; border-radius: 12px; border: none;
+    background: var(--sage); color: var(--navy); font-size: 14px;
+    font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  }
 </style>
 </head>
 <body>
@@ -580,12 +682,28 @@
 
 <div class="save-toast" id="saveToast">✓ Saved</div>
 
+<div class="modal-overlay" id="suppModal" onclick="closeSuppModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-title">💊 My Supplements</div>
+    <div class="modal-subtitle">Add supplements below. Toggle "Daily" for ones you take every day — they'll be pre-checked automatically.</div>
+    <div class="modal-supp-list" id="modalSuppList"></div>
+    <div class="modal-add-row">
+      <input class="modal-add-input" id="newSuppInput" type="text" placeholder="e.g. Vitamin D, Magnesium…" onkeydown="if(event.key==='Enter') addSupp()">
+      <button class="modal-add-btn" onclick="addSupp()">+ Add</button>
+    </div>
+    <button class="modal-close-btn" onclick="closeSuppModal()">Done</button>
+  </div>
+</div>
+
+
 <script>
 const DAYS = [
   {
     key: 'mon', name: 'Monday',
-    badge: 'Kettlebell', badgeClass: 'badge-kb',
-    workout: 'Kettlebell 16',
+    badge: 'Strength Training', badgeClass: 'badge-kb',
+    workout: 'Strength',
+    circleOptions: ['Kettlebell 16'],
+    hasCustomOther: true,
     cal: ['Deficit'],
     vest: false, hasVestOpt: false, optionalWalk: false,
     defaultFast: true
@@ -619,8 +737,10 @@ const DAYS = [
   },
   {
     key: 'fri', name: 'Friday',
-    badge: 'Kettlebell', badgeClass: 'badge-kb',
-    workout: 'Kettlebell 16',
+    badge: 'Strength Training', badgeClass: 'badge-kb',
+    workout: 'Strength',
+    circleOptions: ['Kettlebell 16'],
+    hasCustomOther: true,
     cal: ['Deficit'],
     optionalWalk: true, vestOptWalk: true,
     defaultFast: true
@@ -829,6 +949,7 @@ function fastingBlock(dayKey, defaultFast) {
 function dailyTrackers(dayKey, defaultFast) {
   const affChecked = get(dayKey+'_aff_done') === 'true';
   return `<div class="daily-trackers">
+    ${supplementBlock(dayKey)}
     <div class="tracker-mini">
       <label>💤 Sleep (hrs)</label>
       <input type="number" step="0.5" min="0" max="24" placeholder="—"
@@ -1088,6 +1209,111 @@ function adjustWater(dayKey, dir) {
   if (ozEl) ozEl.textContent = next % 1 === 0 ? next : next.toFixed(1);
   if (barEl) barEl.style.width = pct + '%';
   if (pctEl) pctEl.textContent = pct + '%';
+}
+
+
+// ── SUPPLEMENTS ──────────────────────────────
+// Global supplement list stored independently (not per-week)
+function getSupps() {
+  try { return JSON.parse(localStorage.getItem('journey_supps') || '[]'); }
+  catch(e) { return []; }
+}
+function saveSupps(arr) {
+  localStorage.setItem('journey_supps', JSON.stringify(arr));
+}
+
+function supplementBlock(dayKey) {
+  const supps = getSupps();
+  if (supps.length === 0) {
+    return `<div class="supp-block">
+      <div class="supp-header-row">
+        <label>💊 Supplements</label>
+        <button class="supp-edit-btn" onclick="openSuppModal()">＋ Add supplements</button>
+      </div>
+      <div class="supp-empty">No supplements added yet — tap to set up your list.</div>
+    </div>`;
+  }
+  let rows = '';
+  supps.forEach((s, i) => {
+    const checkedKey = dayKey + '_supp_' + i;
+    const isChecked = get(checkedKey) !== '' ? get(checkedKey) === 'true' : s.daily;
+    const checkedClass = isChecked ? 'checked' : '';
+    const dailyTag = s.daily ? '<span class="supp-daily-tag">daily</span>' : '';
+    rows += `<div class="supp-item">
+      <div class="supp-check ${checkedClass}" onclick="toggleSupp('${dayKey}', ${i}, this)">✓</div>
+      <span class="supp-name">${escHtml(s.name)}</span>
+      ${dailyTag}
+    </div>`;
+  });
+  const notesVal = escHtml(get(dayKey + '_supp_notes'));
+  return `<div class="supp-block">
+    <div class="supp-header-row">
+      <label>💊 Supplements</label>
+      <button class="supp-edit-btn" onclick="openSuppModal()">Edit list</button>
+    </div>
+    <div class="supp-list">${rows}</div>
+    <input class="supp-notes-field" type="text" placeholder="Notes (e.g. took with food)…"
+      value="${notesVal}" onchange="set('${dayKey}_supp_notes', this.value)">
+  </div>`;
+}
+
+function toggleSupp(dayKey, idx, el) {
+  el.classList.toggle('checked');
+  set(dayKey + '_supp_' + idx, el.classList.contains('checked') ? 'true' : 'false');
+}
+
+function openSuppModal() {
+  renderModalSuppList();
+  document.getElementById('suppModal').classList.add('open');
+}
+
+function closeSuppModal(e) {
+  if (e && e.target !== document.getElementById('suppModal')) return;
+  document.getElementById('suppModal').classList.remove('open');
+  renderPage(); // refresh day cards to reflect any changes
+}
+
+function renderModalSuppList() {
+  const supps = getSupps();
+  const container = document.getElementById('modalSuppList');
+  if (supps.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--text-light);font-style:italic;padding:4px 0">No supplements yet — add one below.</div>';
+    return;
+  }
+  container.innerHTML = supps.map((s, i) => `
+    <div class="modal-supp-row">
+      <span class="modal-supp-name">${escHtml(s.name)}</span>
+      <div class="modal-daily-toggle ${s.daily ? 'daily' : ''}" onclick="toggleSuppDaily(${i}, this)">
+        ${s.daily ? '✓ Daily' : 'Occasional'}
+      </div>
+      <button class="modal-delete-btn" onclick="deleteSupp(${i})">×</button>
+    </div>`).join('');
+}
+
+function addSupp() {
+  const input = document.getElementById('newSuppInput');
+  const name = input.value.trim();
+  if (!name) return;
+  const supps = getSupps();
+  supps.push({ name, daily: false });
+  saveSupps(supps);
+  input.value = '';
+  renderModalSuppList();
+}
+
+function toggleSuppDaily(idx, el) {
+  const supps = getSupps();
+  supps[idx].daily = !supps[idx].daily;
+  saveSupps(supps);
+  el.classList.toggle('daily');
+  el.textContent = supps[idx].daily ? '✓ Daily' : 'Occasional';
+}
+
+function deleteSupp(idx) {
+  const supps = getSupps();
+  supps.splice(idx, 1);
+  saveSupps(supps);
+  renderModalSuppList();
 }
 
 // INIT
