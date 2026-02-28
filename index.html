@@ -661,6 +661,39 @@
     background: var(--sage); color: var(--navy); font-size: 14px;
     font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif;
   }
+
+  /* SUPPLEMENT COPY-TO */
+  .supp-footer-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 8px; gap: 8px;
+  }
+  .supp-copy-btn {
+    font-size: 10px; padding: 3px 10px; border-radius: 20px;
+    border: 1.5px solid #ddd; background: white; color: var(--navy);
+    cursor: pointer; font-weight: 500; transition: all 0.2s; white-space: nowrap;
+  }
+  .supp-copy-btn:hover { border-color: var(--navy); background: var(--navy); color: white; }
+  .copy-day-picker {
+    display: none; flex-wrap: wrap; gap: 5px; margin-top: 8px;
+    padding: 10px; background: white; border-radius: 10px;
+    border: 1.5px solid #e8e0d8;
+  }
+  .copy-day-picker.open { display: flex; }
+  .copy-day-pill {
+    padding: 4px 12px; border-radius: 20px; border: 1.5px solid #ddd;
+    font-size: 11px; cursor: pointer; background: white; color: var(--navy);
+    transition: all 0.2s; font-weight: 500;
+  }
+  .copy-day-pill:hover { border-color: var(--navy); background: var(--navy); color: white; }
+  .copy-done-pill {
+    padding: 4px 12px; border-radius: 20px; border: 1.5px solid var(--sage-dark);
+    background: var(--sage); color: var(--navy); font-size: 11px; font-weight: 500;
+    pointer-events: none;
+  }
+  .copy-cancel-btn {
+    font-size: 10px; color: var(--text-light); cursor: pointer;
+    background: none; border: none; padding: 4px; text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -1246,6 +1279,9 @@ function supplementBlock(dayKey) {
     </div>`;
   });
   const notesVal = escHtml(get(dayKey + '_supp_notes'));
+  const otherDays = DAYS.filter(d => d.key !== dayKey).map(d =>
+    '<div class="copy-day-pill" onclick="copySuppToDay(\'' + dayKey + '\', \'' + d.key + '\', this)">' + d.name + '</div>'
+  ).join('');
   return `<div class="supp-block">
     <div class="supp-header-row">
       <label>💊 Supplements</label>
@@ -1254,6 +1290,13 @@ function supplementBlock(dayKey) {
     <div class="supp-list">${rows}</div>
     <input class="supp-notes-field" type="text" placeholder="Notes (e.g. took with food)…"
       value="${notesVal}" onchange="set('${dayKey}_supp_notes', this.value)">
+    <div class="supp-footer-row">
+      <button class="supp-copy-btn" onclick="toggleCopyPicker('${dayKey}')">📋 Copy to another day</button>
+    </div>
+    <div class="copy-day-picker" id="copyPicker_${dayKey}">
+      ${otherDays}
+      <button class="copy-cancel-btn" onclick="toggleCopyPicker('${dayKey}')">cancel</button>
+    </div>
   </div>`;
 }
 
@@ -1314,6 +1357,47 @@ function deleteSupp(idx) {
   supps.splice(idx, 1);
   saveSupps(supps);
   renderModalSuppList();
+}
+
+
+function toggleCopyPicker(dayKey) {
+  const picker = document.getElementById('copyPicker_' + dayKey);
+  if (picker) picker.classList.toggle('open');
+}
+
+function copySuppToDay(fromKey, toKey, pillEl) {
+  const supps = getSupps();
+  // Load destination week data (same week)
+  const destData = loadWeek(currentWeek);
+
+  // Copy each supplement checkbox — merge only (don't overwrite existing)
+  supps.forEach((s, i) => {
+    const fromCheckedKey = fromKey + '_supp_' + i;
+    const toCheckedKey = toKey + '_supp_' + i;
+    const fromVal = data[fromCheckedKey] !== undefined ? data[fromCheckedKey] : (s.daily ? 'true' : 'false');
+    if (destData[toCheckedKey] === undefined || destData[toCheckedKey] === '') {
+      destData[toCheckedKey] = fromVal;
+    }
+  });
+
+  // Copy notes — merge only if destination notes empty
+  const fromNotes = data[fromKey + '_supp_notes'] || '';
+  const toNotesKey = toKey + '_supp_notes';
+  if (!destData[toNotesKey] && fromNotes) {
+    destData[toNotesKey] = fromNotes;
+  }
+
+  // Save back
+  try {
+    localStorage.setItem('journey_w' + currentWeek, JSON.stringify(destData));
+    showToast();
+  } catch(e) {}
+
+  // Visual feedback on pill
+  pillEl.classList.remove('copy-day-pill');
+  pillEl.classList.add('copy-done-pill');
+  pillEl.textContent = '✓ ' + pillEl.textContent.trim();
+  pillEl.onclick = null;
 }
 
 // INIT
