@@ -694,6 +694,46 @@
     font-size: 10px; color: var(--text-light); cursor: pointer;
     background: none; border: none; padding: 4px; text-decoration: underline;
   }
+
+  /* INLINE EDITABLE TARGET PILLS */
+  .target-pill input.val {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px; font-weight: 500; color: var(--navy);
+    background: transparent; border: none;
+    border-bottom: 1.5px solid var(--sage-dark);
+    border-radius: 0; text-align: center;
+    width: 100%; outline: none; padding: 2px 4px;
+  }
+  .target-pill input.val:focus { border-bottom-color: var(--navy); }
+  .targets-row { grid-template-columns: 1fr 1fr !important; }
+
+  /* MEASURE GRID 4-col */
+  .measure-grid { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 420px) { .measure-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  /* 5/3/1 CARD */
+  .card-531 {}
+  .week531-badge {
+    display: flex; flex-direction: column; gap: 2px;
+    background: var(--navy); color: var(--cream);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;
+  }
+  .w531-label { font-size: 13px; font-weight: 500; }
+  .w531-hint  { font-size: 11px; opacity: 0.75; }
+  .lift-list  { display: flex; flex-direction: column; gap: 12px; }
+  .lift-row   {
+    background: var(--cream); border-radius: 10px; padding: 10px 12px;
+  }
+  .lift-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  }
+  .lift-icon  { font-size: 16px; }
+  .lift-name  { font-size: 13px; font-weight: 500; color: var(--navy); flex: 1; }
+  .lift-tm-field { display: flex; align-items: center; }
+  .lift-log-row {
+    display: flex; gap: 6px;
+  }
+  .lift-log-row input { font-size: 13px; }
 </style>
 </head>
 <body>
@@ -731,73 +771,14 @@
 
 <script>
 const DAYS = [
-  {
-    key: 'mon', name: 'Monday',
-    badge: 'Strength Training', badgeClass: 'badge-kb',
-    workout: 'Strength',
-    circleOptions: ['Kettlebell 16'],
-    hasCustomOther: true,
-    cal: ['Deficit'],
-    vest: false, hasVestOpt: false, optionalWalk: false,
-    defaultFast: true
-  },
-  {
-    key: 'tue', name: 'Tuesday',
-    badge: 'Rest', badgeClass: 'badge-off',
-    workout: 'Off',
-    cal: ['Deficit'],
-    vest: false, isOff: true,
-    defaultFast: false
-  },
-  {
-    key: 'wed', name: 'Wednesday',
-    badge: 'Steady', badgeClass: 'badge-steady',
-    workout: 'Steady',
-    circleOptions: ['Big Burn 30', 'Super Burn 40'],
-    cal: ['Deficit', 'Maintenance'],
-    vest: true,
-    defaultFast: true
-  },
-  {
-    key: 'thu', name: 'Thursday',
-    badge: 'Interval', badgeClass: 'badge-interval',
-    workout: 'Interval',
-    circleOptions: ['2 Fast Miles 34:45'],
-    hasCustomOther: true,
-    cal: ['Deficit'],
-    vest: false, vestNote: 'No vest',
-    defaultFast: false
-  },
-  {
-    key: 'fri', name: 'Friday',
-    badge: 'Strength Training', badgeClass: 'badge-kb',
-    workout: 'Strength',
-    circleOptions: ['Kettlebell 16'],
-    hasCustomOther: true,
-    cal: ['Deficit'],
-    optionalWalk: true, vestOptWalk: true,
-    defaultFast: true
-  },
-  {
-    key: 'sat', name: 'Saturday',
-    badge: 'Long Walk', badgeClass: 'badge-long',
-    workout: 'Long',
-    circleOptions: ['Radio Remixes', 'Party Songs', '4 Fast Miles'],
-    cal: ['Maintenance'],
-    vest: true, treat: true,
-    defaultFast: false
-  },
-  {
-    key: 'sun', name: 'Sunday',
-    badge: 'Steady', badgeClass: 'badge-steady',
-    workout: 'Steady',
-    circleOptions: ['Big Burn 30', 'Super Burn 40'],
-    cal: ['Deficit'],
-    vest: true,
-    defaultFast: false
-  }
+  { key: 'mon', name: 'Monday',    badge: 'Rest',    badgeClass: 'badge-off', isOff: true },
+  { key: 'tue', name: 'Tuesday',   badge: 'Rest',    badgeClass: 'badge-off', isOff: true },
+  { key: 'wed', name: 'Wednesday', badge: 'Workout', badgeClass: 'badge-kb'  },
+  { key: 'thu', name: 'Thursday',  badge: 'Workout', badgeClass: 'badge-kb'  },
+  { key: 'fri', name: 'Friday',    badge: 'Workout', badgeClass: 'badge-kb'  },
+  { key: 'sat', name: 'Saturday',  badge: 'Workout', badgeClass: 'badge-kb'  },
+  { key: 'sun', name: 'Sunday',    badge: 'Workout', badgeClass: 'badge-kb'  }
 ];
-
 const STEP_GOAL = 6250;
 let currentWeek = 1;
 let data = {};
@@ -864,6 +845,7 @@ function changeWeek(dir) {
   const next = currentWeek + dir;
   if (next < 1 || next > 12) return;
   currentWeek = next;
+  try { localStorage.setItem('journey_lastWeek', currentWeek); } catch(e) {}
   data = loadWeek(currentWeek);
   renderPage();
 }
@@ -979,7 +961,7 @@ function fastingBlock(dayKey, defaultFast) {
   </div>`;
 }
 
-function dailyTrackers(dayKey, defaultFast) {
+function dailyTrackers(dayKey) {
   const affChecked = get(dayKey+'_aff_done') === 'true';
   return `<div class="daily-trackers">
     ${supplementBlock(dayKey)}
@@ -997,7 +979,6 @@ function dailyTrackers(dayKey, defaultFast) {
       ${stepBar(dayKey)}
     </div>
     ${waterTracker(dayKey)}
-    ${fastingBlock(dayKey, defaultFast)}
     <div class="affirmation-block">
       <div class="affirmation-check-row">
         <div class="checkmark-toggle ${affChecked ? 'checked' : ''}" 
@@ -1013,73 +994,18 @@ function dailyTrackers(dayKey, defaultFast) {
 function renderDayCard(day) {
   const dk = `d_${day.key}`;
   const isOpen = get(dk+'_open') === 'true';
-  const fastDayClass = day.defaultFast ? 'fast-day' : '';
 
   let bodyHtml = `<div class="day-body">`;
-  bodyHtml += dailyTrackers(day.key, day.defaultFast);
+  bodyHtml += dailyTrackers(day.key);
 
   if (!day.isOff) {
-    bodyHtml += `<div class="workout-row">`;
-
-    // Workout selection
-    if (day.circleOptions) {
-      bodyHtml += `<div class="info-row">
+    const WORKOUT_OPTS = ['Big Burn 30', 'Super Burn 40', '2 Fast Miles 34:45', 'Radio Remixes', 'Party Songs', '4 Fast Miles', 'Kettlebell 16'];
+    bodyHtml += `<div class="workout-row">
+      <div class="info-row">
         <span class="info-label">Workout</span>
-        <div class="info-value">${circleOpts(dk+'_workout', day.circleOptions, day.hasCustomOther)}</div>
-      </div>`;
-    }
-
-    // Optional walk (Friday)
-    if (day.optionalWalk) {
-      bodyHtml += `<div class="info-row">
-        <span class="info-label">Walk</span>
-        <div class="info-value" style="display:flex;align-items:center;gap:6px">
-          ${inp(dk+'_walk_min','number','min')}
-          <span style="font-size:12px;color:var(--text-light)">min, easy pace</span>
-        </div>
-      </div>`;
-    }
-
-    // Calories
-    if (day.cal && day.cal.length > 1) {
-      bodyHtml += `<div class="info-row">
-        <span class="info-label">Calories</span>
-        <div class="info-value">${calToggle(dk+'_cal', day.cal)}</div>
-      </div>`;
-    } else if (day.cal) {
-      bodyHtml += `<div class="info-row">
-        <span class="info-label">Calories</span>
-        <div class="info-value" style="padding-top:8px;font-size:13px;color:var(--text-light)">${day.cal[0]}</div>
-      </div>`;
-    }
-
-    // Vest
-    if (day.vest) {
-      bodyHtml += `<div class="info-row">
-        <span class="info-label">Vest</span>
-        <div class="info-value">${vestRow(dk+'_vest_lb', dk+'_vest_min')}</div>
-      </div>`;
-    } else if (day.vestOptWalk) {
-      bodyHtml += `<div class="info-row">
-        <span class="info-label">Vest</span>
-        <div class="info-value" style="padding-top:8px;font-size:12px;color:var(--text-light)">Optional on easy walk only</div>
-      </div>`;
-    } else if (day.vestNote) {
-      bodyHtml += `<div class="info-row">
-        <span class="info-label">Vest</span>
-        <div class="info-value" style="padding-top:8px;font-size:12px;color:var(--text-light)">${day.vestNote}</div>
-      </div>`;
-    }
-
-    // Treat (Saturday)
-    if (day.treat) {
-      bodyHtml += `<div class="info-row">
-        <span class="info-label">Treat</span>
-        <div class="info-value">${inp(dk+'_treat','text','Optional treat plan…')}</div>
-      </div>`;
-    }
-
-    bodyHtml += `</div>`; // workout-row
+        <div class="info-value">${circleOpts(dk+'_workout', WORKOUT_OPTS, true)}</div>
+      </div>
+    </div>`;
   }
 
   // Notes
@@ -1090,7 +1016,7 @@ function renderDayCard(day) {
 
   bodyHtml += `</div>`; // day-body
 
-  return `<div class="day-card ${isOpen ? 'open' : ''} ${fastDayClass}" id="daycard_${day.key}">
+  return `<div class="day-card ${isOpen ? 'open' : ''}" id="daycard_${day.key}">
     <div class="day-header" onclick="toggleDay('${day.key}')">
       <span class="day-name">${day.name}</span>
       <span class="day-badge ${day.badgeClass}">${day.badge}</span>
@@ -1103,8 +1029,6 @@ function renderDayCard(day) {
 function renderPage() {
   updateHeader();
   renderDots();
-
-  const maintenanceDays = get('maintenance_days');
 
   let html = '';
 
@@ -1120,41 +1044,47 @@ function renderPage() {
         <label>End Date</label>
         <input type="date" value="${escHtml(get('dateEnd'))}" onchange="set('dateEnd', this.value); updateHeader()">
       </div>
-      <div class="field-group full">
-        <div class="maintenance-row">
-          <label>🌿 Maintenance days this week:</label>
-          <input type="text" placeholder="e.g. Saturday" value="${escHtml(maintenanceDays)}" onchange="set('maintenance_days', this.value)">
-        </div>
-      </div>
     </div>
   </div>`;
 
-  // TARGETS CARD
+  // TARGETS CARD — Slae Phase 1: goal weight × 12 = deficit cals, × 0.7 = protein
+  const tCal  = get('target_cal',  '2,040');
+  const tPro  = get('target_pro',  '120g');
   html += `<div class="card" style="animation-delay:0.05s">
     <div class="card-title"><div class="icon icon-sage">🎯</div>Weekly Targets</div>
+    <div style="font-size:10px;color:var(--text-light);margin-bottom:10px;font-style:italic">Based on Slae Phase 1 — tap to edit</div>
     <div class="targets-row">
-      <div class="target-pill"><div class="val">1,650</div><div class="lbl">Deficit Cals</div></div>
-      <div class="target-pill"><div class="val">130g</div><div class="lbl">Protein (deficit)</div></div>
-      <div class="target-pill"><div class="val">2,100</div><div class="lbl">Maintenance Cals</div></div>
-      <div class="target-pill"><div class="val">130g</div><div class="lbl">Protein (maint.)</div></div>
+      <div class="target-pill">
+        <input class="val" type="text" value="${escHtml(tCal)}" onchange="set('target_cal', this.value)">
+        <div class="lbl">Deficit Calories</div>
+      </div>
+      <div class="target-pill">
+        <input class="val" type="text" value="${escHtml(tPro)}" onchange="set('target_pro', this.value)">
+        <div class="lbl">Protein Goal</div>
+      </div>
     </div>
   </div>`;
 
-  // MEASUREMENTS CARD
+  // MEASUREMENTS CARD — twice-monthly Friday weigh-ins (Slae method)
   html += `<div class="card" style="animation-delay:0.1s">
     <div class="card-title"><div class="icon icon-blush">📊</div>Measurements</div>
+    <div style="font-size:10px;color:var(--text-light);margin-bottom:10px;font-style:italic">Weigh-in Fridays × 2 per month — same time, same conditions</div>
     <div class="measure-grid">
       <div class="measure-box">
-        <input type="text" placeholder="—" value="${escHtml(get('wed_weight'))}" onchange="set('wed_weight', this.value)">
-        <label>Wed Weight</label>
+        <input type="text" placeholder="—" value="${escHtml(get('fri1_weight'))}" onchange="set('fri1_weight', this.value)">
+        <label>Fri 1 Weight</label>
       </div>
       <div class="measure-box">
-        <input type="text" placeholder="—" value="${escHtml(get('wed_waist'))}" onchange="set('wed_waist', this.value)">
-        <label>Wed Waist</label>
+        <input type="text" placeholder="—" value="${escHtml(get('fri1_waist'))}" onchange="set('fri1_waist', this.value)">
+        <label>Fri 1 Waist</label>
       </div>
       <div class="measure-box">
-        <input type="text" placeholder="—" value="${escHtml(get('sat_weight'))}" onchange="set('sat_weight', this.value)">
-        <label>Sat Weight</label>
+        <input type="text" placeholder="—" value="${escHtml(get('fri2_weight'))}" onchange="set('fri2_weight', this.value)">
+        <label>Fri 2 Weight</label>
+      </div>
+      <div class="measure-box">
+        <input type="text" placeholder="—" value="${escHtml(get('fri2_waist'))}" onchange="set('fri2_waist', this.value)">
+        <label>Fri 2 Waist</label>
       </div>
     </div>
   </div>`;
@@ -1165,7 +1095,52 @@ function renderPage() {
   DAYS.forEach(day => { html += renderDayCard(day); });
   html += `</div>`;
 
-  // WEEKLY REFLECTION CARD
+  // 5/3/1 STRENGTH TRACKER
+  const lifts531 = [
+    { key: 'squat',    label: 'Squat',          icon: '🏋️' },
+    { key: 'bench',    label: 'Bench Press',     icon: '💪' },
+    { key: 'deadlift', label: 'Deadlift',        icon: '🔩' },
+    { key: 'ohp',      label: 'Shoulder Press',  icon: '⬆️' }
+  ];
+  const weekNum531 = ((currentWeek - 2 + 4) % 4) + 1; // 5/3/1 starts on app Week 2
+  const week531Labels = { 1: 'Week 1 — 3×5', 2: 'Week 2 — 3×3', 3: 'Week 3 — 5/3/1 (PR week!)', 4: 'Week 4 — Deload (50%)' };
+  const week531Hint  = { 1: '65%, 75%, 85% of TM', 2: '70%, 80%, 90% of TM', 3: '75%, 85%, 95% of TM', 4: 'Light — central nervous system recovery' };
+  let liftRows = '';
+  lifts531.forEach(l => {
+    const tmKey  = '531_tm_'  + l.key;
+    const wgtKey = '531_wgt_' + l.key;
+    const repKey = '531_rep_' + l.key;
+    const nKey   = '531_n_'   + l.key;
+    liftRows += '<div class="lift-row">'
+      + '<div class="lift-header">'
+      +   '<span class="lift-icon">' + l.icon + '</span>'
+      +   '<span class="lift-name">' + l.label + '</span>'
+      +   '<div class="lift-tm-field">'
+      +     '<span style="font-size:10px;color:var(--text-light);margin-right:4px">TM:</span>'
+      +     '<input type="number" placeholder="lbs" value="' + escHtml(get(tmKey)) + '" onchange="set(\'' + tmKey + '\', this.value)" style="width:64px;font-size:12px;padding:3px 6px;border-radius:8px;border:1.5px solid #ddd;text-align:center;">'
+      +   '</div>'
+      + '</div>'
+      + '<div class="lift-log-row">'
+      +   '<input type="text" placeholder="Weight used…" value="' + escHtml(get(wgtKey)) + '" onchange="set(\'' + wgtKey + '\', this.value)" style="flex:1">'
+      +   '<input type="text" placeholder="Reps" value="' + escHtml(get(repKey)) + '" onchange="set(\'' + repKey + '\', this.value)" style="width:70px">'
+      + '</div>'
+      + '<input type="text" placeholder="Notes…" value="' + escHtml(get(nKey)) + '" onchange="set(\'' + nKey + '\', this.value)" style="width:100%;margin-top:5px;font-size:12px;padding:5px 8px;border-radius:7px;border:1.5px solid #e8e0d8;background:var(--cream)">'
+      + '</div>';
+  });
+  html += '<div class="card card-531" style="animation-delay:0.22s;margin-top:14px">'
+    + '<div class="card-title"><div class="icon icon-navy">💪</div>5/3/1 Strength Log</div>'
+    + '<div class="week531-badge">'
+    +   '<span class="w531-label">' + week531Labels[weekNum531] + '</span>'
+    +   '<span class="w531-hint">'  + week531Hint[weekNum531]  + '</span>'
+    + '</div>'
+    + '<div class="lift-list">' + liftRows + '</div>'
+    + '<div style="margin-top:10px">'
+    +   '<label>Overall Notes</label>'
+    +   textarea('531_notes', 'How did this week feel? PRs, observations…')
+    + '</div>'
+    + '</div>';
+
+    // WEEKLY REFLECTION CARD
   html += `<div class="card" style="animation-delay:0.2s;margin-top:14px">
     <div class="card-title"><div class="icon icon-sage">✨</div>Weekly Reflection</div>
     <div class="reflection-grid">
@@ -1400,7 +1375,11 @@ function copySuppToDay(fromKey, toKey, pillEl) {
   pillEl.onclick = null;
 }
 
-// INIT
+// INIT — open on last-used week
+try {
+  const lastWeek = parseInt(localStorage.getItem('journey_lastWeek'));
+  if (lastWeek >= 1 && lastWeek <= 12) currentWeek = lastWeek;
+} catch(e) {}
 data = loadWeek(currentWeek);
 renderPage();
 </script>
