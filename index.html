@@ -270,6 +270,7 @@
   }
   .badge-kb { background: var(--blush); color: var(--navy); }
   .badge-off { background: #f0f0f0; color: #888; }
+  .badge-datafit { background: var(--navy); color: var(--cream); }
   .badge-steady { background: var(--sage); color: var(--navy); }
   .badge-interval { background: #e8eef8; color: var(--navy); }
   .badge-long { background: var(--navy); color: var(--cream); }
@@ -711,29 +712,28 @@
   .measure-grid { grid-template-columns: repeat(2, 1fr); }
   @media (min-width: 420px) { .measure-grid { grid-template-columns: repeat(4, 1fr); } }
 
-  /* 5/3/1 CARD */
-  .card-531 {}
-  .week531-badge {
-    display: flex; flex-direction: column; gap: 2px;
-    background: var(--navy); color: var(--cream);
-    border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;
+
+
+  /* DATAFIT WORKOUT */
+  .datafit-badge-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
   }
-  .w531-label { font-size: 13px; font-weight: 500; }
-  .w531-hint  { font-size: 11px; opacity: 0.75; }
-  .lift-list  { display: flex; flex-direction: column; gap: 12px; }
-  .lift-row   {
-    background: var(--cream); border-radius: 10px; padding: 10px 12px;
+  .datafit-program-tag {
+    font-size: 10px; padding: 3px 10px; border-radius: 20px;
+    background: var(--navy); color: var(--cream); font-weight: 500;
+    letter-spacing: 0.04em;
   }
-  .lift-header {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  .datafit-day-label {
+    font-size: 13px; font-weight: 500; color: var(--navy);
   }
-  .lift-icon  { font-size: 16px; }
-  .lift-name  { font-size: 13px; font-weight: 500; color: var(--navy); flex: 1; }
-  .lift-tm-field { display: flex; align-items: center; }
-  .lift-log-row {
-    display: flex; gap: 6px;
+  .datafit-ex-list {
+    display: flex; flex-direction: column; gap: 5px;
   }
-  .lift-log-row input { font-size: 13px; }
+  .datafit-ex {
+    font-size: 12px; color: var(--text);
+    background: var(--cream); border-radius: 7px;
+    padding: 6px 10px; line-height: 1.4;
+  }
 </style>
 </head>
 <body>
@@ -779,6 +779,25 @@ const DAYS = [
   { key: 'sat', name: 'Saturday',  badge: 'Workout', badgeClass: 'badge-kb'  },
   { key: 'sun', name: 'Sunday',    badge: 'Workout', badgeClass: 'badge-kb'  }
 ];
+
+// Datafit schedule by week and day
+// Weeks 1-2: no Datafit
+// Weeks 3-10: 101 2-Day — Wed=Day1, Sat=Day2, Thu/Fri/Sun=walking
+// Weeks 11-12: Beg 3-Day — Wed=Day1, Fri=Day2, Sun=Day3, Thu/Sat=walking
+function getDatafitDay(weekNum, dayKey) {
+  if (weekNum < 3) return null;
+  if (weekNum <= 10) {
+    // 101 2-Day
+    if (dayKey === 'wed') return { program: '101 (2-Day)', day: 'Day 1', exercises: ['DB Goblet Squat — 2-3×6-10', 'DB Bench Press — 2-3×6-10', 'DB Reverse Lunge — 2-3×10-12', '1 Arm DB Row — 2-3×10-12', 'DB Bicep Curl — 2-3×12-15', 'Ab Crunch — 2-3×15-20'] };
+    if (dayKey === 'sat') return { program: '101 (2-Day)', day: 'Day 2', exercises: ['DB Hip Thrust — 2-3×10-12', 'DB Shoulder Press — 2-3×6-10', 'DB RDL — 2-3×6-10', 'DB Pullover — 2-3×10-12', 'DB Skull Crusher — 2-3×12-15', 'Elbow Plank — 2-3×20-60 sec'] };
+    return null; // walking day
+  }
+  // Weeks 11-12: Beginner 3-Day
+  if (dayKey === 'wed') return { program: 'Beg 3-Day', day: 'Day 1 — Full Body', exercises: ['A1 Goblet Pause Squats — 3×6-8 (superset)', 'A2 DB Incline Bench Press — 3×6-8', 'B1 Constant Tension Slow Single Arm Row — 3×8-12/side (superset)', 'B2 DB Hip Thrust — 3×8-12', 'C1 DB Alternating Bicep Curl — 3×8-12/side (superset)', 'C2 Plank Body Saw — 3×10'] };
+  if (dayKey === 'fri') return { program: 'Beg 3-Day', day: 'Day 2 — Full Body', exercises: ['A1 DB RDL — 3×6-8 (superset)', 'A2 Chest Supported DB Row — 3×8-10', 'B1 Supported DB Step Down — 3×8-12/side (superset)', 'B2 DB Bench Press — 3×8-12', 'C1 DB Single Arm Skullcrusher — 3×10-12/side (superset)', 'C2 Long Lever Russian Twist — 3×8-12/side'] };
+  if (dayKey === 'sun') return { program: 'Beg 3-Day', day: 'Day 3 — Full Body', exercises: ['A1 Goblet Split Squat — 3×8-10/side (superset)', 'A2 Slow Eccentric Incline Push-Up — 3×AMRAP', 'B1 B Stance RDL — 3×8-12/side (superset)', 'B2 DB Seated Overhead Press — 3×8-12', 'C1 Incline Rear Delt Row — 3×12-15 (superset)', 'C2 DB Plank Pull Through — 3×10-15/side'] };
+  return null; // walking day
+}
 const STEP_GOAL = 6250;
 let currentWeek = 1;
 let data = {};
@@ -999,13 +1018,34 @@ function renderDayCard(day) {
   bodyHtml += dailyTrackers(day.key);
 
   if (!day.isOff) {
-    const WORKOUT_OPTS = ['Big Burn 30', 'Super Burn 40', '2 Fast Miles 34:45', 'Radio Remixes', 'Party Songs', '4 Fast Miles', 'Kettlebell 16'];
-    bodyHtml += `<div class="workout-row">
-      <div class="info-row">
-        <span class="info-label">Workout</span>
-        <div class="info-value">${circleOpts(dk+'_workout', WORKOUT_OPTS, true)}</div>
-      </div>
-    </div>`;
+    const datafitDay = getDatafitDay(currentWeek, day.key);
+    const WALK_OPTS = ['Big Burn 30', 'Super Burn 40', '2 Fast Miles 34:45', 'Radio Remixes', 'Party Songs', '4 Fast Miles'];
+
+    if (datafitDay) {
+      // Datafit strength day
+      const exList = datafitDay.exercises.map(e =>
+        '<div class="datafit-ex">' + e + '</div>'
+      ).join('');
+      bodyHtml += '<div class="workout-row">'
+        + '<div class="datafit-badge-row">'
+        +   '<span class="datafit-program-tag">' + datafitDay.program + '</span>'
+        +   '<span class="datafit-day-label">' + datafitDay.day + '</span>'
+        + '</div>'
+        + '<div class="datafit-ex-list">' + exList + '</div>'
+        + '<div class="info-row" style="margin-top:10px">'
+        +   '<span class="info-label">Notes</span>'
+        +   '<div class="info-value">' + textarea(dk+'_df_notes', 'Weights used, how it felt…') + '</div>'
+        + '</div>'
+        + '</div>';
+    } else {
+      // Walking video day
+      bodyHtml += '<div class="workout-row">'
+        + '<div class="info-row">'
+        +   '<span class="info-label">Walk</span>'
+        +   '<div class="info-value">' + circleOpts(dk+'_workout', WALK_OPTS, true) + '</div>'
+        + '</div>'
+        + '</div>';
+    }
   }
 
   // Notes
@@ -1019,7 +1059,7 @@ function renderDayCard(day) {
   return `<div class="day-card ${isOpen ? 'open' : ''}" id="daycard_${day.key}">
     <div class="day-header" onclick="toggleDay('${day.key}')">
       <span class="day-name">${day.name}</span>
-      <span class="day-badge ${day.badgeClass}">${day.badge}</span>
+      ${(()=>{ if(day.isOff) return '<span class="day-badge badge-off">Rest</span>'; const df=getDatafitDay(currentWeek,day.key); if(df) return '<span class="day-badge badge-datafit">Datafit '+df.day+'</span>'; return '<span class="day-badge badge-kb">Walk</span>'; })()}
       <span class="day-chevron">▼</span>
     </div>
     ${bodyHtml}
@@ -1095,52 +1135,7 @@ function renderPage() {
   DAYS.forEach(day => { html += renderDayCard(day); });
   html += `</div>`;
 
-  // 5/3/1 STRENGTH TRACKER
-  const lifts531 = [
-    { key: 'squat',    label: 'Squat',          icon: '🏋️' },
-    { key: 'bench',    label: 'Bench Press',     icon: '💪' },
-    { key: 'deadlift', label: 'Deadlift',        icon: '🔩' },
-    { key: 'ohp',      label: 'Shoulder Press',  icon: '⬆️' }
-  ];
-  const weekNum531 = ((currentWeek - 2 + 4) % 4) + 1; // 5/3/1 starts on app Week 2
-  const week531Labels = { 1: 'Week 1 — 3×5', 2: 'Week 2 — 3×3', 3: 'Week 3 — 5/3/1 (PR week!)', 4: 'Week 4 — Deload (50%)' };
-  const week531Hint  = { 1: '65%, 75%, 85% of TM', 2: '70%, 80%, 90% of TM', 3: '75%, 85%, 95% of TM', 4: 'Light — central nervous system recovery' };
-  let liftRows = '';
-  lifts531.forEach(l => {
-    const tmKey  = '531_tm_'  + l.key;
-    const wgtKey = '531_wgt_' + l.key;
-    const repKey = '531_rep_' + l.key;
-    const nKey   = '531_n_'   + l.key;
-    liftRows += '<div class="lift-row">'
-      + '<div class="lift-header">'
-      +   '<span class="lift-icon">' + l.icon + '</span>'
-      +   '<span class="lift-name">' + l.label + '</span>'
-      +   '<div class="lift-tm-field">'
-      +     '<span style="font-size:10px;color:var(--text-light);margin-right:4px">TM:</span>'
-      +     '<input type="number" placeholder="lbs" value="' + escHtml(get(tmKey)) + '" onchange="set(\'' + tmKey + '\', this.value)" style="width:64px;font-size:12px;padding:3px 6px;border-radius:8px;border:1.5px solid #ddd;text-align:center;">'
-      +   '</div>'
-      + '</div>'
-      + '<div class="lift-log-row">'
-      +   '<input type="text" placeholder="Weight used…" value="' + escHtml(get(wgtKey)) + '" onchange="set(\'' + wgtKey + '\', this.value)" style="flex:1">'
-      +   '<input type="text" placeholder="Reps" value="' + escHtml(get(repKey)) + '" onchange="set(\'' + repKey + '\', this.value)" style="width:70px">'
-      + '</div>'
-      + '<input type="text" placeholder="Notes…" value="' + escHtml(get(nKey)) + '" onchange="set(\'' + nKey + '\', this.value)" style="width:100%;margin-top:5px;font-size:12px;padding:5px 8px;border-radius:7px;border:1.5px solid #e8e0d8;background:var(--cream)">'
-      + '</div>';
-  });
-  html += '<div class="card card-531" style="animation-delay:0.22s;margin-top:14px">'
-    + '<div class="card-title"><div class="icon icon-navy">💪</div>5/3/1 Strength Log</div>'
-    + '<div class="week531-badge">'
-    +   '<span class="w531-label">' + week531Labels[weekNum531] + '</span>'
-    +   '<span class="w531-hint">'  + week531Hint[weekNum531]  + '</span>'
-    + '</div>'
-    + '<div class="lift-list">' + liftRows + '</div>'
-    + '<div style="margin-top:10px">'
-    +   '<label>Overall Notes</label>'
-    +   textarea('531_notes', 'How did this week feel? PRs, observations…')
-    + '</div>'
-    + '</div>';
-
-    // WEEKLY REFLECTION CARD
+  // WEEKLY REFLECTION CARD
   html += `<div class="card" style="animation-delay:0.2s;margin-top:14px">
     <div class="card-title"><div class="icon icon-sage">✨</div>Weekly Reflection</div>
     <div class="reflection-grid">
