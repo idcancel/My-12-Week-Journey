@@ -714,7 +714,26 @@
 
 
 
-  /* DATAFIT WORKOUT */
+  /* SECTION BLOCKS (workout days) */
+  .section-block {
+    background: var(--cream);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 10px;
+  }
+  .section-block-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  }
+  .section-block-header label { margin: 0; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-light); }
+  .str-type-row {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .vest-check-row {
+    display: flex; align-items: center; gap: 8px; margin-top: 8px;
+  }
+  .vest-check-label { font-size: 12px; color: var(--text-light); }
+
+
   .datafit-badge-row {
     display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
   }
@@ -1001,99 +1020,108 @@ function fastingBlock(dayKey, defaultFast) {
 }
 
 function dailyTrackers(dayKey) {
-  const affChecked = get(dayKey+'_aff_done') === 'true';
+  const affChecked   = get(dayKey+'_aff_done') === 'true';
+  const nightChecked = get(dayKey+'_night_done') === 'true';
   return `<div class="daily-trackers">
-    ${supplementBlock(dayKey)}
+
+    <!-- 1. SLEEP -->
     <div class="tracker-mini">
       <label>💤 Sleep (hrs)</label>
       <input type="number" step="0.5" min="0" max="24" placeholder="—"
         value="${escHtml(get(dayKey+'_sleep'))}"
         onchange="set('${dayKey}_sleep', this.value)">
     </div>
-    <div class="tracker-mini step-bar-wrap">
-      <label>👟 Steps (goal: ${STEP_GOAL.toLocaleString()})</label>
-      <input type="number" min="0" placeholder="—"
-        value="${escHtml(get(dayKey+'_steps'))}"
-        onchange="set('${dayKey}_steps', this.value); updateStepBar('${dayKey}')">
-      ${stepBar(dayKey)}
-    </div>
-    ${waterTracker(dayKey)}
+
+    <!-- 2. MORNING AFFIRMATION -->
     <div class="affirmation-block">
       <div class="affirmation-check-row">
-        <div class="checkmark-toggle ${affChecked ? 'checked' : ''}" 
+        <div class="checkmark-toggle ${affChecked ? 'checked' : ''}"
           onclick="toggleAff('${dayKey}', this)">✓</div>
-        <label>🌅 Morning Affirmation / Meditation</label>
+        <label>🌅 Morning Affirmation</label>
       </div>
-      <textarea placeholder="Write your affirmation or reflection here…" 
+      <textarea placeholder="Write your affirmation or intention here…"
         onchange="set('${dayKey}_aff_text', this.value)">${escHtml(get(dayKey+'_aff_text'))}</textarea>
     </div>
+
+    <!-- 3. WATER -->
+    ${waterTracker(dayKey)}
+
+    <!-- 4. MORNING SUPPLEMENTS -->
+    ${supplementBlock(dayKey, 'morning')}
+
   </div>`;
 }
 
 function renderDayCard(day) {
   const dk = `d_${day.key}`;
   const isOpen = get(dk+'_open') === 'true';
+  const WALK_OPTS = ['Big Burn 30', 'Super Burn 40', '2 Fast Miles 34:45', 'Radio Remixes', 'Party Songs', '4 Fast Miles'];
 
-  let bodyHtml = `<div class="day-body">`;
+  let bodyHtml = '<div class="day-body">';
+
+  // TOP TRACKERS (sleep, morning aff, water, morning supps)
   bodyHtml += dailyTrackers(day.key);
 
   if (!day.isOff) {
-    const datafitDay = getDatafitDay(currentWeek, day.key);
-    const WALK_OPTS = ['Big Burn 30', 'Super Burn 40', '2 Fast Miles 34:45', 'Radio Remixes', 'Party Songs', '4 Fast Miles'];
+    // 5. STRENGTH TRAINING
+    const strDone  = get(dk+'_str_done') === 'true';
+    const strType  = get(dk+'_str_type') || '';
+    bodyHtml += '<div class="section-block">'
+      + '<div class="section-block-header">'
+      +   '<div class="checkmark-toggle ' + (strDone ? 'checked' : '') + '" onclick="toggleStrength(\'' + dk + '\', this)">✓</div>'
+      +   '<label>🏋️ Strength Training</label>'
+      + '</div>'
+      + '<div class="str-type-row">'
+      +   ['Full Body','Upper Body','Lower Body'].map(t =>
+            '<div class="circle-opt' + (strType === t ? ' selected' : '') + '" onclick="selectCircle(\'' + dk+'_str_type\', \'' + t + '\', this)">' + t + '</div>'
+          ).join('')
+      + '</div>'
+      + textarea(dk+'_str_notes', 'What did you do? Exercises, weights, sets…')
+      + '</div>';
 
-    if (datafitDay) {
-      // Datafit strength day — checkbox + weight field per exercise
-      const exList = datafitDay.exercises.map((e, i) => {
-        const doneKey = dk + '_dfex_' + i + '_done';
-        const wgtKey  = dk + '_dfex_' + i + '_wgt';
-        const isDone  = get(doneKey) === 'true';
-        return '<div class="datafit-ex ' + (isDone ? 'ex-done' : '') + '">'
-          + '<div class="ex-check-col">'
-          +   '<div class="ex-checkbox ' + (isDone ? 'checked' : '') + '" onclick="toggleDfEx(\'' + doneKey + '\', this)">✓</div>'
-          + '</div>'
-          + '<div class="ex-info-col">'
-          +   '<span class="ex-name">' + e + '</span>'
-          +   '<div class="ex-weight-row">'
-          +     '<input type="number" placeholder="lbs" min="0" step="2.5" value="' + escHtml(get(wgtKey)) + '" onchange="set(\'' + wgtKey + '\', this.value)" class="ex-weight-input">'
-          +     '<span class="ex-weight-unit">lbs</span>'
-          +   '</div>'
-          + '</div>'
-          + '</div>';
-      }).join('');
-      bodyHtml += '<div class="workout-row">'
-        + '<div class="datafit-badge-row">'
-        +   '<span class="datafit-program-tag">' + datafitDay.program + '</span>'
-        +   '<span class="datafit-day-label">' + datafitDay.day + '</span>'
-        + '</div>'
-        + '<div class="datafit-ex-list">' + exList + '</div>'
-        + '<div class="info-row" style="margin-top:10px">'
-        +   '<span class="info-label">Notes</span>'
-        +   '<div class="info-value">' + textarea(dk+'_df_notes', 'How it felt, observations…') + '</div>'
-        + '</div>'
-        + '</div>';
-    } else {
-      // Walking video day
-      bodyHtml += '<div class="workout-row">'
-        + '<div class="info-row">'
-        +   '<span class="info-label">Walk</span>'
-        +   '<div class="info-value">' + circleOpts(dk+'_workout', WALK_OPTS, true) + '</div>'
-        + '</div>'
-        + '</div>';
-    }
+    // 6. WALK + VEST
+    const vestOn = get(dk+'_vest') === 'true';
+    bodyHtml += '<div class="section-block">'
+      + '<label style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-light);display:block;margin-bottom:8px">🚶 Walk</label>'
+      + '<div class="info-value" style="margin-bottom:10px">' + circleOpts(dk+'_workout', WALK_OPTS, true) + '</div>'
+      + '<div class="vest-check-row">'
+      +   '<div class="checkmark-toggle ' + (vestOn ? 'checked' : '') + '" onclick="toggleVest(\'' + dk + '\', this)">✓</div>'
+      +   '<span class="vest-check-label">Weighted vest</span>'
+      + '</div>'
+      + '</div>';
   }
 
-  // Notes
-  bodyHtml += `<div style="margin-top:10px">
-    <label>Notes</label>
-    ${textarea(dk+'_notes', 'Add notes…')}
-  </div>`;
+  // 7. EVENING SUPPLEMENTS
+  bodyHtml += supplementBlock(day.key, 'evening');
 
-  bodyHtml += `</div>`; // day-body
+  // 8. STEPS
+  bodyHtml += '<div class="section-block">'
+    + '<div class="tracker-mini step-bar-wrap" style="background:transparent;padding:0">'
+    +   '<label>👟 Steps (goal: ' + STEP_GOAL.toLocaleString() + ')</label>'
+    +   '<input type="number" min="0" placeholder="—"'
+    +     ' value="' + escHtml(get(dk.replace('d_','')+'_steps')) + '"'
+    +     ' onchange="set(\'' + day.key + '_steps\', this.value); updateStepBar(\'' + day.key + '\')">'
+    +   stepBar(day.key)
+    + '</div>'
+    + '</div>';
+
+  // 9. NIGHT NOTES
+  const nightChecked = get(day.key+'_night_done') === 'true';
+  bodyHtml += '<div class="affirmation-block" style="margin-top:2px">'
+    + '<div class="affirmation-check-row">'
+    +   '<div class="checkmark-toggle ' + (nightChecked ? 'checked' : '') + '" onclick="toggleNight(\'' + day.key + '\', this)">✓</div>'
+    +   '<label>🌙 Night Notes</label>'
+    + '</div>'
+    + '<textarea placeholder="How did today go? Energy, mood, wins…"'
+    +   ' onchange="set(\'' + day.key + '_night_text\', this.value)">' + escHtml(get(day.key+'_night_text')) + '</textarea>'
+    + '</div>';
+
+  bodyHtml += '</div>'; // day-body
 
   return `<div class="day-card ${isOpen ? 'open' : ''}" id="daycard_${day.key}">
     <div class="day-header" onclick="toggleDay('${day.key}')">
       <span class="day-name">${day.name}</span>
-      ${(()=>{ if(day.isOff) return '<span class="day-badge badge-off">Rest</span>'; const df=getDatafitDay(currentWeek,day.key); if(df) return '<span class="day-badge badge-datafit">Datafit '+df.day+'</span>'; return '<span class="day-badge badge-kb">Walk</span>'; })()}
+      ${(()=>{ if(day.isOff) return '<span class="day-badge badge-off">Rest</span>'; return '<span class="day-badge badge-kb">Workout</span>'; })()}
       <span class="day-chevron">▼</span>
     </div>
     ${bodyHtml}
@@ -1163,7 +1191,31 @@ function renderPage() {
     </div>
   </div>`;
 
-  // DAYS
+  // DATAFIT REFERENCE CARD
+  const refDays = [];
+  DAYS.filter(d => !d.isOff).forEach(d => {
+    const df = getDatafitDay(currentWeek, d.key);
+    if (df) refDays.push({ name: d.name, df });
+  });
+  if (refDays.length > 0) {
+    const refOpen = get('datafit_ref_open') === 'true';
+    let refHtml = '<div class="card" style="animation-delay:0.12s">'
+      + '<div class="card-title" style="cursor:pointer;margin-bottom:' + (refOpen ? '14' : '0') + 'px" onclick="toggleDatafitRef()">'
+      +   '<div class="icon icon-navy">📋</div>Datafit Reference'
+      +   '<span style="margin-left:auto;font-size:12px;color:var(--text-light);transition:transform 0.3s;display:inline-block;transform:rotate(' + (refOpen ? '180' : '0') + 'deg)">▼</span>'
+      + '</div>'
+      + '<div id="datafitRefBody" style="display:' + (refOpen ? 'block' : 'none') + '">';
+    refDays.forEach(({ name, df }) => {
+      refHtml += '<div style="margin-bottom:12px">'
+        + '<div style="font-size:12px;font-weight:500;color:var(--navy);margin-bottom:6px">' + name + ' — ' + df.day + '</div>'
+        + df.exercises.map(e => '<div class="datafit-ex" style="padding:5px 8px;font-size:11px">' + e + '</div>').join('')
+        + '</div>';
+    });
+    refHtml += '</div></div>';
+    html += refHtml;
+  }
+
+  // DAILY PLAN
   html += `<div style="animation-delay:0.15s">
     <div class="card-title" style="padding:0 4px 6px;margin-bottom:0"><div class="icon icon-navy">🗓</div>Daily Plan</div>`;
   DAYS.forEach(day => { html += renderDayCard(day); });
@@ -1259,55 +1311,109 @@ function saveSupps(arr) {
   localStorage.setItem('journey_supps', JSON.stringify(arr));
 }
 
-function supplementBlock(dayKey) {
+function supplementBlock(dayKey, timeOfDay) {
+  // timeOfDay: 'morning' or 'evening'
   const supps = getSupps();
+  const icon  = timeOfDay === 'morning' ? '☀️' : '🌙';
+  const label = icon + ' Supplements — ' + (timeOfDay === 'morning' ? 'Morning' : 'Evening');
+  const copyPickerId = 'copyPicker_' + dayKey + '_' + timeOfDay;
+
   if (supps.length === 0) {
-    return `<div class="supp-block">
-      <div class="supp-header-row">
-        <label>💊 Supplements</label>
-        <button class="supp-edit-btn" onclick="openSuppModal()">＋ Add supplements</button>
-      </div>
-      <div class="supp-empty">No supplements added yet — tap to set up your list.</div>
-    </div>`;
+    return '<div class="supp-block">'
+      + '<div class="supp-header-row">'
+      +   '<label>' + label + '</label>'
+      +   '<button class="supp-edit-btn" onclick="openSuppModal()">＋ Add</button>'
+      + '</div>'
+      + '<div class="supp-empty">No supplements yet — tap to set up.</div>'
+      + '</div>';
   }
+
   let rows = '';
   supps.forEach((s, i) => {
-    const checkedKey = dayKey + '_supp_' + i;
-    const isChecked = get(checkedKey) !== '' ? get(checkedKey) === 'true' : s.daily;
-    const checkedClass = isChecked ? 'checked' : '';
-    const dailyTag = s.daily ? '<span class="supp-daily-tag">daily</span>' : '';
-    rows += `<div class="supp-item">
-      <div class="supp-check ${checkedClass}" onclick="toggleSupp('${dayKey}', ${i}, this)">✓</div>
-      <span class="supp-name">${escHtml(s.name)}</span>
-      ${dailyTag}
-    </div>`;
+    const checkedKey = dayKey + '_supp_' + timeOfDay + '_' + i;
+    const isChecked  = get(checkedKey) !== '' ? get(checkedKey) === 'true' : s.daily;
+    rows += '<div class="supp-item">'
+      + '<div class="supp-check ' + (isChecked ? 'checked' : '') + '" onclick="toggleSuppTimed(\'' + dayKey + '\',\'' + timeOfDay + '\',' + i + ',this)">✓</div>'
+      + '<span class="supp-name">' + escHtml(s.name) + '</span>'
+      + (s.daily ? '<span class="supp-daily-tag">daily</span>' : '')
+      + '</div>';
   });
-  const notesVal = escHtml(get(dayKey + '_supp_notes'));
+
+  const notesKey = dayKey + '_supp_' + timeOfDay + '_notes';
   const otherDays = DAYS.filter(d => d.key !== dayKey).map(d =>
-    '<div class="copy-day-pill" onclick="copySuppToDay(\'' + dayKey + '\', \'' + d.key + '\', this)">' + d.name + '</div>'
+    '<div class="copy-day-pill" onclick="copySuppToDay(\'' + dayKey + '\',\'' + d.key + '\',\'' + timeOfDay + '\',this)">' + d.name + '</div>'
   ).join('');
-  return `<div class="supp-block">
-    <div class="supp-header-row">
-      <label>💊 Supplements</label>
-      <button class="supp-edit-btn" onclick="openSuppModal()">Edit list</button>
-    </div>
-    <div class="supp-list">${rows}</div>
-    <input class="supp-notes-field" type="text" placeholder="Notes (e.g. took with food)…"
-      value="${notesVal}" onchange="set('${dayKey}_supp_notes', this.value)">
-    <div class="supp-footer-row">
-      <button class="supp-copy-btn" onclick="toggleCopyPicker('${dayKey}')">📋 Copy to another day</button>
-    </div>
-    <div class="copy-day-picker" id="copyPicker_${dayKey}">
-      ${otherDays}
-      <button class="copy-cancel-btn" onclick="toggleCopyPicker('${dayKey}')">cancel</button>
-    </div>
-  </div>`;
+
+  return '<div class="supp-block">'
+    + '<div class="supp-header-row">'
+    +   '<label>' + label + '</label>'
+    +   '<button class="supp-edit-btn" onclick="openSuppModal()">Edit</button>'
+    + '</div>'
+    + '<div class="supp-list">' + rows + '</div>'
+    + '<input class="supp-notes-field" type="text" placeholder="Notes…" value="' + escHtml(get(notesKey)) + '" onchange="set(\'' + notesKey + '\', this.value)">'
+    + '<div class="supp-footer-row">'
+    +   '<button class="supp-copy-btn" onclick="toggleCopyPickerTimed(\'' + dayKey + '\',\'' + timeOfDay + '\')">📋 Copy to another day</button>'
+    + '</div>'
+    + '<div class="copy-day-picker" id="' + copyPickerId + '">'
+    +   otherDays
+    +   '<button class="copy-cancel-btn" onclick="toggleCopyPickerTimed(\'' + dayKey + '\',\'' + timeOfDay + '\')">cancel</button>'
+    + '</div>'
+    + '</div>';
 }
 
-function toggleSupp(dayKey, idx, el) {
+function toggleSuppTimed(dayKey, timeOfDay, idx, el) {
   el.classList.toggle('checked');
-  set(dayKey + '_supp_' + idx, el.classList.contains('checked') ? 'true' : 'false');
+  set(dayKey + '_supp_' + timeOfDay + '_' + idx, el.classList.contains('checked') ? 'true' : 'false');
 }
+
+function toggleCopyPickerTimed(dayKey, timeOfDay) {
+  const picker = document.getElementById('copyPicker_' + dayKey + '_' + timeOfDay);
+  if (picker) picker.classList.toggle('open');
+}
+
+function copySuppToDay(fromKey, toKey, timeOfDay, pillEl) {
+  const supps = getSupps();
+  const destData = loadWeek(currentWeek);
+  supps.forEach((s, i) => {
+    const fromK = fromKey + '_supp_' + timeOfDay + '_' + i;
+    const toK   = toKey   + '_supp_' + timeOfDay + '_' + i;
+    const fromVal = data[fromK] !== undefined ? data[fromK] : (s.daily ? 'true' : 'false');
+    if (destData[toK] === undefined || destData[toK] === '') destData[toK] = fromVal;
+  });
+  const fromNotes = data[fromKey + '_supp_' + timeOfDay + '_notes'] || '';
+  const toNotesKey = toKey + '_supp_' + timeOfDay + '_notes';
+  if (!destData[toNotesKey] && fromNotes) destData[toNotesKey] = fromNotes;
+  try { localStorage.setItem('journey_w' + currentWeek, JSON.stringify(destData)); showToast(); } catch(e) {}
+  pillEl.classList.replace('copy-day-pill', 'copy-done-pill');
+  pillEl.textContent = '✓ ' + pillEl.textContent.trim();
+  pillEl.onclick = null;
+}
+
+function toggleDatafitRef() {
+  const body = document.getElementById('datafitRefBody');
+  const isOpen = body.style.display === 'none';
+  body.style.display = isOpen ? 'block' : 'none';
+  set('datafit_ref_open', isOpen ? 'true' : 'false');
+  const chevron = body.previousElementSibling.querySelector('span:last-child');
+  if (chevron) chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function toggleStrength(dk, el) {
+  el.classList.toggle('checked');
+  set(dk + '_str_done', el.classList.contains('checked') ? 'true' : 'false');
+}
+
+function toggleVest(dk, el) {
+  el.classList.toggle('checked');
+  set(dk + '_vest', el.classList.contains('checked') ? 'true' : 'false');
+}
+
+function toggleNight(dayKey, el) {
+  el.classList.toggle('checked');
+  set(dayKey + '_night_done', el.classList.contains('checked') ? 'true' : 'false');
+}
+
+
 
 function openSuppModal() {
   renderModalSuppList();
