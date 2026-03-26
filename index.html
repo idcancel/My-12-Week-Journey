@@ -696,6 +696,101 @@
     background: none; border: none; padding: 4px; text-decoration: underline;
   }
 
+  /* SUPPLEMENT GUIDE CARD */
+  .supp-guide-section { margin-bottom: 14px; }
+  .supp-guide-time-block { margin-bottom: 12px; }
+  .supp-guide-time-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  .sgtl-morning { background: #fef3c7; color: #92400e; }
+  .sgtl-preworkout { background: #ede9fe; color: #5b21b6; }
+  .sgtl-evening { background: var(--sage); color: var(--navy); }
+  .sgtl-asneeded { background: #f0fdf4; color: #166534; }
+  .sgtl-future { background: #f1f5f9; color: #64748b; }
+  .supp-guide-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--cream); border-radius: 9px; padding: 9px 11px;
+    margin-bottom: 5px; transition: opacity 0.2s;
+  }
+  .supp-guide-row.sg-checked { opacity: 0.45; }
+  .sg-checkbox {
+    width: 20px; height: 20px; border-radius: 5px;
+    border: 2px solid #c8c0b8; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; transition: all 0.2s; flex-shrink: 0;
+    background: white; margin-top: 1px;
+  }
+  .sg-checkbox.checked { background: var(--navy); border-color: var(--navy); color: white; }
+  .supp-guide-reset-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; padding: 6px 10px;
+    background: var(--cream); border-radius: 8px;
+  }
+  .supp-guide-reset-label { font-size: 11px; color: var(--text-light); }
+  .supp-guide-reset-btn {
+    font-size: 10px; padding: 3px 10px; border-radius: 20px;
+    border: 1.5px solid #ddd; background: white; color: var(--navy);
+    cursor: pointer; font-weight: 500; transition: all 0.2s;
+  }
+  .supp-guide-reset-btn:hover { border-color: var(--navy); }
+  .supp-guide-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+  }
+  .sgd-amber { background: #d97706; }
+  .sgd-teal  { background: #0f766e; }
+  .sgd-blue  { background: #1e40af; }
+  .sgd-green { background: #15803d; }
+  .sgd-plum  { background: #6d28d9; }
+  .sgd-coral { background: #be123c; }
+  .sgd-gray  { background: #6b7280; }
+  .supp-guide-info { flex: 1; min-width: 0; }
+  .supp-guide-name { font-size: 13px; font-weight: 500; color: var(--navy); line-height: 1.3; }
+  .supp-guide-detail { font-size: 11px; color: var(--text-light); margin-top: 2px; line-height: 1.4; }
+  .supp-guide-dose {
+    font-size: 11px; font-weight: 600; color: var(--text-light);
+    text-align: right; white-space: nowrap; flex-shrink: 0; line-height: 1.5;
+  }
+  .supp-rampup-box {
+    background: #f0fdfa; border: 1px solid #99f6e4;
+    border-left: 3px solid #0f766e; border-radius: 0 8px 8px 0;
+    padding: 10px 12px; margin: 8px 0 4px;
+  }
+  .supp-rampup-title {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #0f766e; margin-bottom: 7px;
+  }
+  .supp-rampup-steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+  .supp-rampup-step {
+    background: white; border-radius: 6px; padding: 7px 8px;
+    border: 1px solid rgba(15,118,110,0.15);
+  }
+  .supp-rampup-days { font-size: 10px; font-weight: 600; color: #0f766e; }
+  .supp-rampup-dose { font-size: 12px; font-weight: 500; color: var(--navy); margin-top: 1px; }
+  .supp-rampup-note { font-size: 10px; color: var(--text-light); margin-top: 1px; }
+  .supp-guide-notes-box {
+    background: #fffbeb; border: 1px solid #fde68a;
+    border-left: 3px solid #d97706; border-radius: 0 8px 8px 0;
+    padding: 10px 12px; margin-top: 10px;
+  }
+  .supp-guide-notes-title {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #92400e; margin-bottom: 6px;
+  }
+  .supp-guide-notes-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .supp-guide-notes-list li {
+    font-size: 11px; color: var(--text-light); padding-left: 12px;
+    position: relative; line-height: 1.5;
+  }
+  .supp-guide-notes-list li::before { content: '•'; position: absolute; left: 0; color: #d97706; font-weight: 700; }
+  .supp-guide-future {
+    font-size: 11px; color: var(--text-light); font-style: italic;
+    padding: 8px 12px; background: var(--cream); border-radius: 8px;
+    border: 1px dashed #ddd; text-align: center;
+  }
+
   /* INLINE EDITABLE TARGET PILLS */
   .target-pill input.val {
     font-family: 'DM Sans', sans-serif;
@@ -1215,6 +1310,78 @@ function renderPage() {
     html += refHtml;
   }
 
+  // SUPPLEMENT GUIDE CARD
+  const sgOpen = get('supp_guide_open') === 'true';
+  html += `<div class="card" style="animation-delay:0.13s">
+    <div class="card-title" style="cursor:pointer;margin-bottom:${sgOpen ? '14' : '0'}px" onclick="toggleSuppGuide()">
+      <div class="icon icon-sage">💊</div>Supplement Guide
+      <span style="margin-left:auto;font-size:12px;color:var(--text-light);transition:transform 0.3s;display:inline-block;transform:rotate(${sgOpen ? '180' : '0'}deg)">▼</span>
+    </div>
+    <div id="suppGuideBody" style="display:${sgOpen ? 'block' : 'none'}">
+
+      <div class="supp-guide-section">
+
+        <div class="supp-guide-reset-row">
+          <span class="supp-guide-reset-label" id="suppGuideDate"></span>
+          <button class="supp-guide-reset-btn" onclick="resetSuppGuide()">Reset all</button>
+        </div>
+
+        <div class="supp-guide-time-block">
+          <div class="supp-guide-time-label sgtl-morning">🌅 Morning — with breakfast</div>
+          <div class="supp-guide-row ${getSgChecked('sg_vitd') ? 'sg-checked' : ''}" id="sgrow_vitd"><div class="sg-checkbox ${getSgChecked('sg_vitd') ? 'checked' : ''}" onclick="toggleSgCheck('sg_vitd', this)">✓</div><div class="supp-guide-dot sgd-amber"></div><div class="supp-guide-info"><div class="supp-guide-name">Vitamin D3 + K2</div><div class="supp-guide-detail">Fat-soluble — always take with food · Sports Research</div></div><div class="supp-guide-dose">2,000–4,000 IU D3<br>100mcg K2</div></div>
+          <div class="supp-guide-row ${getSgChecked('sg_creatine') ? 'sg-checked' : ''}" id="sgrow_creatine"><div class="sg-checkbox ${getSgChecked('sg_creatine') ? 'checked' : ''}" onclick="toggleSgCheck('sg_creatine', this)">✓</div><div class="supp-guide-dot sgd-teal"></div><div class="supp-guide-info"><div class="supp-guide-name">Creatine Monohydrate</div><div class="supp-guide-detail">Timing flexible — just take it daily · Creapure-sourced</div></div><div class="supp-guide-dose">5g</div></div>
+          <div class="supp-guide-row ${getSgChecked('sg_cdg') ? 'sg-checked' : ''}" id="sgrow_cdg"><div class="sg-checkbox ${getSgChecked('sg_cdg') ? 'checked' : ''}" onclick="toggleSgCheck('sg_cdg', this)">✓</div><div class="supp-guide-dot sgd-green"></div><div class="supp-guide-info"><div class="supp-guide-name">Calcium D-Glucarate</div><div class="supp-guide-detail">Estrogen clearance · Designs for Health or Pure Encapsulations</div></div><div class="supp-guide-dose">2 capsules<br>1,200mg</div></div>
+          <div class="supp-guide-row ${getSgChecked('sg_omega3') ? 'sg-checked' : ''}" id="sgrow_omega3"><div class="sg-checkbox ${getSgChecked('sg_omega3') ? 'checked' : ''}" onclick="toggleSgCheck('sg_omega3', this)">✓</div><div class="supp-guide-dot sgd-blue"></div><div class="supp-guide-info"><div class="supp-guide-name">Omega-3 Fish Oil</div><div class="supp-guide-detail">Take with food · Sports Research Triple Strength</div></div><div class="supp-guide-dose">1 softgel<br>1,000mg EPA+DHA</div></div>
+          <div class="supp-guide-row ${getSgChecked('sg_macu') ? 'sg-checked' : ''}" id="sgrow_macu"><div class="sg-checkbox ${getSgChecked('sg_macu') ? 'checked' : ''}" onclick="toggleSgCheck('sg_macu', this)">✓</div><div class="supp-guide-dot sgd-amber"></div><div class="supp-guide-info"><div class="supp-guide-name">MacuHealth</div><div class="supp-guide-detail">Eye doctor recommended — never skip · daily consistency is essential</div></div><div class="supp-guide-dose">1 softgel</div></div>
+          <div class="supp-guide-row ${getSgChecked('sg_multi') ? 'sg-checked' : ''}" id="sgrow_multi"><div class="sg-checkbox ${getSgChecked('sg_multi') ? 'checked' : ''}" onclick="toggleSgCheck('sg_multi', this)">✓</div><div class="supp-guide-dot sgd-plum"></div><div class="supp-guide-info"><div class="supp-guide-name">Thorne Women's Multi 50+</div><div class="supp-guide-detail">Start at 3 capsules — increase to 6 only if directed</div></div><div class="supp-guide-dose">3 capsules</div></div>
+          <div class="supp-guide-row ${getSgChecked('sg_vitc') ? 'sg-checked' : ''}" id="sgrow_vitc"><div class="sg-checkbox ${getSgChecked('sg_vitc') ? 'checked' : ''}" onclick="toggleSgCheck('sg_vitc', this)">✓</div><div class="supp-guide-dot sgd-blue"></div><div class="supp-guide-info"><div class="supp-guide-name">Vitamin C</div><div class="supp-guide-detail">Kirkland 1,000mg · skip once multi is started</div></div><div class="supp-guide-dose">½–1 tablet<br>500–1,000mg</div></div>
+        </div>
+
+        <div class="supp-guide-time-block">
+          <div class="supp-guide-time-label sgtl-preworkout">🏋️ Pre-workout — 30–45 min before training</div>
+          <div class="supp-guide-row ${getSgChecked('sg_collagen') ? 'sg-checked' : ''}" id="sgrow_collagen"><div class="sg-checkbox ${getSgChecked('sg_collagen') ? 'checked' : ''}" onclick="toggleSgCheck('sg_collagen', this)">✓</div><div class="supp-guide-dot sgd-coral"></div><div class="supp-guide-info"><div class="supp-guide-name">Collagen Peptides + Vitamin C</div><div class="supp-guide-detail">Sports Research Multi Collagen Powder · Vit C required for synthesis</div></div><div class="supp-guide-dose">10–15g collagen<br>50mg+ Vit C</div></div>
+        </div>
+
+        <div class="supp-guide-time-block">
+          <div class="supp-guide-time-label sgtl-evening">🌙 Evening — 1–2 hrs before bed</div>
+          <div class="supp-guide-row ${getSgChecked('sg_mag') ? 'sg-checked' : ''}" id="sgrow_mag"><div class="sg-checkbox ${getSgChecked('sg_mag') ? 'checked' : ''}" onclick="toggleSgCheck('sg_mag', this)">✓</div><div class="supp-guide-dot sgd-teal"></div><div class="supp-guide-info"><div class="supp-guide-name">Magnesium Glycinate</div><div class="supp-guide-detail">Doctor's Best or Myoxcience · 2 with dinner + 2 before bed</div></div><div class="supp-guide-dose">4 tablets<br>400mg total</div></div>
+          <div class="supp-rampup-box">
+            <div class="supp-rampup-title">Magnesium ramp-up</div>
+            <div class="supp-rampup-steps">
+              <div class="supp-rampup-step"><div class="supp-rampup-days">Days 1–3</div><div class="supp-rampup-dose">2 tablets</div><div class="supp-rampup-note">200mg — start here</div></div>
+              <div class="supp-rampup-step"><div class="supp-rampup-days">Days 4–5</div><div class="supp-rampup-dose">3 tablets</div><div class="supp-rampup-note">300mg — optional</div></div>
+              <div class="supp-rampup-step"><div class="supp-rampup-days">Day 6+</div><div class="supp-rampup-dose">4 tablets</div><div class="supp-rampup-note">400mg full dose</div></div>
+            </div>
+          </div>
+          <div class="supp-guide-row ${getSgChecked('sg_fiber') ? 'sg-checked' : ''}" id="sgrow_fiber" style="margin-top:6px"><div class="sg-checkbox ${getSgChecked('sg_fiber') ? 'checked' : ''}" onclick="toggleSgCheck('sg_fiber', this)">✓</div><div class="supp-guide-dot sgd-amber"></div><div class="supp-guide-info"><div class="supp-guide-name">Fiber Blend</div><div class="supp-guide-detail">DIY — Bob's Red Mill oat bran + ground flaxseed + psyllium husk</div></div><div class="supp-guide-dose">~15g<br>stir into food</div></div>
+        </div>
+
+        <div class="supp-guide-time-block">
+          <div class="supp-guide-time-label sgtl-asneeded">💧 As needed — workout days / daily if cramping</div>
+          <div class="supp-guide-row ${getSgChecked('sg_electro') ? 'sg-checked' : ''}" id="sgrow_electro"><div class="sg-checkbox ${getSgChecked('sg_electro') ? 'checked' : ''}" onclick="toggleSgCheck('sg_electro', this)">✓</div><div class="supp-guide-dot sgd-green"></div><div class="supp-guide-info"><div class="supp-guide-name">Electrolytes</div><div class="supp-guide-detail">LMNT or Water Boy Workout · mix with 16–32oz water</div></div><div class="supp-guide-dose">1 packet</div></div>
+        </div>
+
+        <div class="supp-guide-time-block">
+          <div class="supp-guide-time-label sgtl-future">⏳ Future addition</div>
+          <div class="supp-guide-future">Tru Niagen 300mg (NAD+) — 1 capsule daily, morning · buy only from official Tru Niagen Amazon store</div>
+        </div>
+
+        <div class="supp-guide-notes-box">
+          <div class="supp-guide-notes-title">Key reminders</div>
+          <ul class="supp-guide-notes-list">
+            <li>Vitamin D3 is fat-soluble — always take with a fat-containing meal</li>
+            <li>Magnesium (evening) is separated from Vitamin D & minerals (morning) to avoid absorption competition</li>
+            <li>Collagen must be paired with Vitamin C — required for synthesis</li>
+            <li>MacuHealth requires daily consistency — never skip</li>
+            <li>CDG may affect metabolism of some medications — flag with your neurologist</li>
+            <li>If loose stools occur with magnesium, reduce by 1 tablet and stay at that level</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>`;
+
   // DAILY PLAN
   html += `<div style="animation-delay:0.15s">
     <div class="card-title" style="padding:0 4px 6px;margin-bottom:0"><div class="icon icon-navy">🗓</div>Daily Plan</div>`;
@@ -1247,6 +1414,7 @@ function renderPage() {
   content.innerHTML = html;
   content.scrollTop = 0;
   window.scrollTo(0, 0);
+  updateSuppGuideDate();
 }
 
 function toggleDay(key) {
@@ -1387,6 +1555,58 @@ function copySuppToDay(fromKey, toKey, timeOfDay, pillEl) {
   pillEl.classList.replace('copy-day-pill', 'copy-done-pill');
   pillEl.textContent = '✓ ' + pillEl.textContent.trim();
   pillEl.onclick = null;
+}
+
+// ── SUPPLEMENT GUIDE CHECKBOXES ──────────────────────────────
+function sgTodayKey() {
+  const d = new Date();
+  return 'sg_' + d.getFullYear() + '_' + (d.getMonth()+1) + '_' + d.getDate();
+}
+
+function getSgData() {
+  try { return JSON.parse(localStorage.getItem(sgTodayKey()) || '{}'); }
+  catch(e) { return {}; }
+}
+
+function getSgChecked(id) {
+  return getSgData()[id] === 'true';
+}
+
+function toggleSgCheck(id, el) {
+  const d = getSgData();
+  const nowChecked = !el.classList.contains('checked');
+  d[id] = nowChecked ? 'true' : 'false';
+  localStorage.setItem(sgTodayKey(), JSON.stringify(d));
+  el.classList.toggle('checked', nowChecked);
+  const row = document.getElementById('sgrow_' + id.replace('sg_',''));
+  if (row) row.classList.toggle('sg-checked', nowChecked);
+}
+
+function resetSuppGuide() {
+  localStorage.removeItem(sgTodayKey());
+  // Uncheck all visually without full re-render
+  document.querySelectorAll('.sg-checkbox').forEach(el => el.classList.remove('checked'));
+  document.querySelectorAll('.supp-guide-row').forEach(el => el.classList.remove('sg-checked'));
+}
+
+function updateSuppGuideDate() {
+  const el = document.getElementById('suppGuideDate');
+  if (!el) return;
+  const d = new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  el.textContent = days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate();
+}
+
+function toggleSuppGuide() {
+  const body = document.getElementById('suppGuideBody');
+  const isOpen = body.style.display === 'none';
+  body.style.display = isOpen ? 'block' : 'none';
+  set('supp_guide_open', isOpen ? 'true' : 'false');
+  const chevron = body.previousElementSibling.querySelector('span:last-child');
+  if (chevron) chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+  const title = body.previousElementSibling;
+  if (title) title.style.marginBottom = isOpen ? '14px' : '0px';
 }
 
 function toggleDatafitRef() {
