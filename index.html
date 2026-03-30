@@ -908,29 +908,28 @@ const DAYS = [
   { key: 'mon', name: 'Monday',    badge: 'Rest',    badgeClass: 'badge-off', isOff: true },
   { key: 'tue', name: 'Tuesday',   badge: 'Rest',    badgeClass: 'badge-off', isOff: true },
   { key: 'wed', name: 'Wednesday', badge: 'Workout', badgeClass: 'badge-kb'  },
-  { key: 'thu', name: 'Thursday',  badge: 'Workout', badgeClass: 'badge-kb'  },
+  { key: 'thu', name: 'Thursday',  badge: 'Walk',    badgeClass: 'badge-steady', isWalkOnly: true },
   { key: 'fri', name: 'Friday',    badge: 'Workout', badgeClass: 'badge-kb'  },
-  { key: 'sat', name: 'Saturday',  badge: 'Workout', badgeClass: 'badge-kb'  },
-  { key: 'sun', name: 'Sunday',    badge: 'Workout', badgeClass: 'badge-kb'  }
+  { key: 'sat', name: 'Saturday',  badge: 'Rest',    badgeClass: 'badge-off', isOff: true },
+  { key: 'sun', name: 'Sunday',    badge: 'Rest',    badgeClass: 'badge-off', isOff: true }
 ];
 
 // Datafit schedule by week and day
-// Weeks 1-2: no Datafit
-// Weeks 3-10: 101 2-Day — Wed=Day1, Sat=Day2, Thu/Fri/Sun=walking
-// Weeks 11-12: Beg 3-Day — Wed=Day1, Fri=Day2, Sun=Day3, Thu/Sat=walking
+// Weeks 1-2: walking only on Wed/Thu/Fri
+// Weeks 3-10: 101 2-Day — Wed=Day1, Fri=Day2, Thu=walking (active recovery)
+// Weeks 11-12: Beg 3-Day — Wed=Day1, Thu=Day2, Fri=Day3
 function getDatafitDay(weekNum, dayKey) {
   if (weekNum < 3) return null;
   if (weekNum <= 10) {
-    // 101 2-Day
     if (dayKey === 'wed') return { program: '101 (2-Day)', day: 'Day 1', exercises: ['DB Goblet Squat — 2-3×6-10', 'DB Bench Press — 2-3×6-10', 'DB Reverse Lunge — 2-3×10-12', '1 Arm DB Row — 2-3×10-12', 'DB Bicep Curl — 2-3×12-15', 'Ab Crunch — 2-3×15-20'] };
-    if (dayKey === 'sat') return { program: '101 (2-Day)', day: 'Day 2', exercises: ['DB Hip Thrust — 2-3×10-12', 'DB Shoulder Press — 2-3×6-10', 'DB RDL — 2-3×6-10', 'DB Pullover — 2-3×10-12', 'DB Skull Crusher — 2-3×12-15', 'Elbow Plank — 2-3×20-60 sec'] };
-    return null; // walking day
+    if (dayKey === 'fri') return { program: '101 (2-Day)', day: 'Day 2', exercises: ['DB Hip Thrust — 2-3×10-12', 'DB Shoulder Press — 2-3×6-10', 'DB RDL — 2-3×6-10', 'DB Pullover — 2-3×10-12', 'DB Skull Crusher — 2-3×12-15', 'Elbow Plank — 2-3×20-60 sec'] };
+    return null; // Thu = walking active recovery
   }
   // Weeks 11-12: Beginner 3-Day
   if (dayKey === 'wed') return { program: 'Beg 3-Day', day: 'Day 1 — Full Body', exercises: ['A1 Goblet Pause Squats — 3×6-8 (superset)', 'A2 DB Incline Bench Press — 3×6-8', 'B1 Constant Tension Slow Single Arm Row — 3×8-12/side (superset)', 'B2 DB Hip Thrust — 3×8-12', 'C1 DB Alternating Bicep Curl — 3×8-12/side (superset)', 'C2 Plank Body Saw — 3×10'] };
-  if (dayKey === 'fri') return { program: 'Beg 3-Day', day: 'Day 2 — Full Body', exercises: ['A1 DB RDL — 3×6-8 (superset)', 'A2 Chest Supported DB Row — 3×8-10', 'B1 Supported DB Step Down — 3×8-12/side (superset)', 'B2 DB Bench Press — 3×8-12', 'C1 DB Single Arm Skullcrusher — 3×10-12/side (superset)', 'C2 Long Lever Russian Twist — 3×8-12/side'] };
-  if (dayKey === 'sun') return { program: 'Beg 3-Day', day: 'Day 3 — Full Body', exercises: ['A1 Goblet Split Squat — 3×8-10/side (superset)', 'A2 Slow Eccentric Incline Push-Up — 3×AMRAP', 'B1 B Stance RDL — 3×8-12/side (superset)', 'B2 DB Seated Overhead Press — 3×8-12', 'C1 Incline Rear Delt Row — 3×12-15 (superset)', 'C2 DB Plank Pull Through — 3×10-15/side'] };
-  return null; // walking day
+  if (dayKey === 'thu') return { program: 'Beg 3-Day', day: 'Day 2 — Full Body', exercises: ['A1 DB RDL — 3×6-8 (superset)', 'A2 Chest Supported DB Row — 3×8-10', 'B1 Supported DB Step Down — 3×8-12/side (superset)', 'B2 DB Bench Press — 3×8-12', 'C1 DB Single Arm Skullcrusher — 3×10-12/side (superset)', 'C2 Long Lever Russian Twist — 3×8-12/side'] };
+  if (dayKey === 'fri') return { program: 'Beg 3-Day', day: 'Day 3 — Full Body', exercises: ['A1 Goblet Split Squat — 3×8-10/side (superset)', 'A2 Slow Eccentric Incline Push-Up — 3×AMRAP', 'B1 B Stance RDL — 3×8-12/side (superset)', 'B2 DB Seated Overhead Press — 3×8-12', 'C1 Incline Rear Delt Row — 3×12-15 (superset)', 'C2 DB Plank Pull Through — 3×10-15/side'] };
+  return null;
 }
 const STEP_GOAL = 6250;
 let currentWeek = 1;
@@ -1158,32 +1157,43 @@ function renderDayCard(day) {
   bodyHtml += dailyTrackers(day.key);
 
   if (!day.isOff) {
-    // 5. STRENGTH TRAINING
-    const strDone  = get(dk+'_str_done') === 'true';
-    const strType  = get(dk+'_str_type') || '';
-    bodyHtml += '<div class="section-block">'
-      + '<div class="section-block-header">'
-      +   '<div class="checkmark-toggle ' + (strDone ? 'checked' : '') + '" onclick="toggleStrength(\'' + dk + '\', this)">✓</div>'
-      +   '<label>🏋️ Strength Training</label>'
-      + '</div>'
-      + '<div class="str-type-row">'
-      +   ['Full Body','Upper Body','Lower Body'].map(t =>
-            '<div class="circle-opt' + (strType === t ? ' selected' : '') + '" onclick="selectCircle(\'' + dk+'_str_type\', \'' + t + '\', this)">' + t + '</div>'
-          ).join('')
-      + '</div>'
-      + textarea(dk+'_str_notes', 'What did you do? Exercises, weights, sets…')
-      + '</div>';
+    const dfDay = getDatafitDay(currentWeek, day.key);
+    const isStrengthDay = !day.isWalkOnly && (currentWeek <= 2 ? false : dfDay !== null);
+    const isActiveRecovery = day.isWalkOnly && currentWeek >= 3 && currentWeek <= 10;
 
-    // 6. WALK + VEST
-    const vestOn = get(dk+'_vest') === 'true';
-    bodyHtml += '<div class="section-block">'
-      + '<label style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-light);display:block;margin-bottom:8px">🚶 Walk</label>'
-      + '<div class="info-value" style="margin-bottom:10px">' + circleOpts(dk+'_workout', WALK_OPTS, true) + '</div>'
-      + '<div class="vest-check-row">'
-      +   '<div class="checkmark-toggle ' + (vestOn ? 'checked' : '') + '" onclick="toggleVest(\'' + dk + '\', this)">✓</div>'
-      +   '<span class="vest-check-label">Weighted vest</span>'
-      + '</div>'
-      + '</div>';
+    // 5. STRENGTH TRAINING (only on strength days, weeks 3+)
+    if (isStrengthDay) {
+      const strDone  = get(dk+'_str_done') === 'true';
+      const strType  = get(dk+'_str_type') || '';
+      bodyHtml += '<div class="section-block">'
+        + '<div class="section-block-header">'
+        +   '<div class="checkmark-toggle ' + (strDone ? 'checked' : '') + '" onclick="toggleStrength(\'' + dk + '\', this)">✓</div>'
+        +   '<label>🏋️ Strength Training</label>'
+        + '</div>'
+        + '<div class="str-type-row">'
+        +   ['Full Body','Upper Body','Lower Body'].map(t =>
+              '<div class="circle-opt' + (strType === t ? ' selected' : '') + '" onclick="selectCircle(\'' + dk+'_str_type\', \'' + t + '\', this)">' + t + '</div>'
+            ).join('')
+        + '</div>'
+        + textarea(dk+'_str_notes', 'What did you do? Exercises, weights, sets…')
+        + '</div>';
+    }
+
+    // 6. WALK + VEST (all workout days weeks 1-2; walk-only Thu weeks 3-10; all days weeks 11-12 optional)
+    const showWalk = currentWeek <= 2 || day.isWalkOnly || !isStrengthDay;
+    if (showWalk || currentWeek >= 11) {
+      const vestOn = get(dk+'_vest') === 'true';
+      const walkLabel = isActiveRecovery ? '🚶 Walk (Active Recovery)' : '🚶 Walk';
+      bodyHtml += '<div class="section-block">'
+        + '<label style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-light);display:block;margin-bottom:8px">' + walkLabel + '</label>'
+        + (isActiveRecovery ? '<div style="font-size:11px;color:var(--text-light);font-style:italic;margin-bottom:8px">Easy pace — let your muscles recover between strength days</div>' : '')
+        + '<div class="info-value" style="margin-bottom:10px">' + circleOpts(dk+'_workout', WALK_OPTS, true) + '</div>'
+        + '<div class="vest-check-row">'
+        +   '<div class="checkmark-toggle ' + (vestOn ? 'checked' : '') + '" onclick="toggleVest(\'' + dk + '\', this)">✓</div>'
+        +   '<span class="vest-check-label">Weighted vest</span>'
+        + '</div>'
+        + '</div>';
+    }
   }
 
   // 7. EVENING SUPPLEMENTS
@@ -1216,7 +1226,16 @@ function renderDayCard(day) {
   return `<div class="day-card ${isOpen ? 'open' : ''}" id="daycard_${day.key}">
     <div class="day-header" onclick="toggleDay('${day.key}')">
       <span class="day-name">${day.name}</span>
-      ${(()=>{ if(day.isOff) return '<span class="day-badge badge-off">Rest</span>'; return '<span class="day-badge badge-kb">Workout</span>'; })()}
+      ${(()=>{
+        if (day.isOff) return '<span class="day-badge badge-off">Rest</span>';
+        if (day.isWalkOnly) {
+          if (currentWeek >= 3 && currentWeek <= 10) return '<span class="day-badge badge-steady">Walk</span>';
+          return '<span class="day-badge badge-kb">Workout</span>';
+        }
+        const df = getDatafitDay(currentWeek, day.key);
+        if (df) return '<span class="day-badge badge-datafit">Strength</span>';
+        return '<span class="day-badge badge-kb">Walk</span>';
+      })()}
       <span class="day-chevron">▼</span>
     </div>
     ${bodyHtml}
@@ -1739,12 +1758,32 @@ function toggleDfEx(doneKey, el) {
   if (row) row.classList.toggle('ex-done', isDone);
 }
 
-// INIT — open on last-used week
+// INIT — open on last-used week, seed Week 1 dates if not yet set
 try {
   const lastWeek = parseInt(localStorage.getItem('journey_lastWeek'));
   if (lastWeek >= 1 && lastWeek <= 12) currentWeek = lastWeek;
 } catch(e) {}
 data = loadWeek(currentWeek);
+
+// Auto-seed Week 1 start (Monday of current week) and end (Sunday) if blank
+try {
+  const w1 = loadWeek(1);
+  if (!w1.dateStart) {
+    const today = new Date();
+    const day = today.getDay(); // 0=Sun,1=Mon,...
+    const diffToMon = (day === 0) ? -6 : 1 - day;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + diffToMon);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const fmt = d => d.toISOString().split('T')[0];
+    w1.dateStart = fmt(monday);
+    w1.dateEnd   = fmt(sunday);
+    localStorage.setItem('journey_w1', JSON.stringify(w1));
+    if (currentWeek === 1) data = w1;
+  }
+} catch(e) {}
+
 renderPage();
 </script>
 </body>
